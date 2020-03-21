@@ -1,0 +1,18 @@
+spec:
+  template:
+    spec:
+      containers:
+      - name: airflow-worker
+        resources:
+          requests:
+            memory: 2Gi
+          limits:
+            memory: 2Gi
+      - name: gcs-syncd
+        resources:
+          requests:
+            cpu: 10m # default from composer
+            memory: 512Mi
+          limits:
+            cpu: 10m
+            memory: 512Mi

@@ -1,0 +1,17 @@
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: airflow-worker
+  namespace: # use ${AIRFLOW_WORKER_NS} variable defined above
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: airflow-worker
+  minReplicas: 1
+  maxReplicas: 50 # Adjust this based on your use case
+  metrics: # Adjust this based on your use case
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageValue: 1.5Gi 

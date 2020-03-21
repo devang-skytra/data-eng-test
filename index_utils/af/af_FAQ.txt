@@ -1,0 +1,87 @@
+
+
+https://airflow.apache.org/docs/stable/concepts.html#scope
+
+XComs
+	Any object that can be pickled can be used so make sure to use objects of appropriate size.
+
+	XComs can be “pushed” (sent) or “pulled” (received). When a task pushes an XCom, it makes it generally available to other tasks. Tasks can push XComs at any time by calling the xcom_push() method. In addition, if a task returns a value (either from its Operator’s execute() method, or from a PythonOperator’s python_callable function), then an XCom containing that value is automatically pushed.
+
+	Tasks call xcom_pull() to retrieve XComs, optionally applying filters based on criteria like key, source task_ids, and source dag_id. By default, xcom_pull() filters for the keys that are automatically given to XComs when they are pushed by being returned from execute functions (as opposed to XComs that are pushed manually).
+
+	If xcom_pull is passed a single string for task_ids, then the most recent XCom value from that task is returned; if a list of task_ids is passed, then a corresponding list of XCom values is returned.
+
+	
+Documentation & Notes
+	add documentation or notes to your DAGs & task objects that become visible in 
+	“Graph View” for DAGs
+		doc_md markdown
+	“Task Details” for tasks). There are a set of special task attributes that get rendered as rich content if defined:
+		doc_json
+		doc_yaml
+		doc_md markdown
+		etc
+	
+	"""
+	### My great DAG
+	"""
+	dag = DAG('my_dag', default_args=default_args)
+	dag.doc_md = __doc__
+
+	t = BashOperator("foo", dag=dag)
+	t.doc_md = """\
+	#Title"
+	Here's a [url](www.airbnb.com)
+	"""
+	
+	
+Packaged DAGs
+	create a zip file that contains the DAG(s) in the root of the zip file and have the extra modules unpacked in directories.
+
+
+.airflowignore
+	specifies a regular expression pattern (under the hood, re.findall() is used to match the pattern)
+	Use the # character to indicate a comment
+	.airflowignore file should be put in your DAG_FOLDER
+
+	.sh
+	.md
+	tenant_[\d]
+
+
+https://cloud.google.com/composer/docs/faq?authuser=1
+
+----------------------------------------------------------
+----------------------------------------------------------
+
+
+	Templating	https://airflow.apache.org/docs/stable/tutorial.html#templating-with-jinja
+	Macros		https://airflow.apache.org/docs/stable/macros.html
+	Variables	https://airflow.apache.org/docs/stable/concepts.html#variables
+
+
+		 
+	CREATING How do I set dependencies between DAGs?
+	----------------------------------------------------------
+	This depends on how you want to define the dependency.
+
+	If you have two DAGs (DAG A and DAG B) and you want DAG B to trigger after DAG A, you can put a TriggerDagRunOperator at the end of Dag A.
+	If DAG B depends only on an artifact that DAG A generates, such as a Pub/Sub message, then a sensor might work better.
+	If DAG B is integrated closely with DAG A, you might be able to merge the two DAGs into one DAG.
+
+
+	CREATING Where do I draw the line between tasks in a DAG?
+	----------------------------------------------------------
+	Each task should be an idempotent unit of work. Consequently, you should avoid encapsulating a multi-step workflow within a single task, such as a complex program running in a PythonOperator.
+
+
+	TESTING - How do I collaborate efficiently with other DAG contributors?
+	----------------------------------------------------------
+	Each contributor can have a subdirectory in the data/ folder for development. DAGs added to the data/ folder won't be picked up automatically by the scheduler or webserver.
+
+	DAG contributors can create manual DAG runs by using the gcloud composer environments run command and the test sub-command with the --subdir flag to specify the contributor's development directory.
+
+	For example:
+
+	gcloud composer environments run test-environment-name \
+		 test -- dag-id task-id execution-date --subdir /home/airflow/gcs/data/alice_dev	 

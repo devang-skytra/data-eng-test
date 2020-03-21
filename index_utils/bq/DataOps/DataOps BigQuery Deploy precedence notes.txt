@@ -1,0 +1,19 @@
+
+https://medium.com/serverlessguru/ci-cd-google-cloud-build-custom-scripts-12c9d23f9d4c
+https://github.com/GoogleCloudPlatform/cloud-builders
+https://cloud.google.com/storage/docs/gsutil
+
+Key : Where see "Loop", read as "Loop through Google Cloud Repository indexproduction/bq/..."
+
+1.   Datasets - Loop ds/ and call bq_safe_mk()
+[C:\git\sbe\bq\DataOps\ops_bq_Safe_Dataset_Make.sh]
+
+
+2. **Tables** - Loop sprint/  and  pass subfolder (sprint) name to bq_deploy()  and  only if sprint does not exist in DataOps.ops_schema_history   and   run all custom incremental schema migration scripts in SEQUENCE
+{ a) simple techique is do a table replace by loading into same table as migration query}
+{ b) safer techique is to backup target table into backup Dataset and then do a) }
+[C:\git\sbe\bq\DataOps\ops_bq_Safe_Deploy.sh]
+
+
+3.   Routines - Loop r/fx + r/sp  and  run use bq cli to deploy  (all should be CREATE OR REPLACE scripts so do not need to check - just redeploy all)
+[C:\git\sbe\bq\DataOps\ops_bq_Deploy_Routines.sh]

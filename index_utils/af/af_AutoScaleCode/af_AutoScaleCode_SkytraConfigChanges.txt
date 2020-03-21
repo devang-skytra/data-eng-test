@@ -1,0 +1,59 @@
+BEFORE
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+MACHINE_TYPE suggested ="n1-standard-4"
+
+composer_airflow_worker_hpa.yaml
+-------------------------------------------------------------------------------------------
+namespace: # use ${AIRFLOW_WORKER_NS} variable defined above
+maxReplicas: 50 # Adjust this based on your use case
+metrics: # Adjust this based on your use case
+
+composer_airflow_worker_patch.yaml
+-------------------------------------------------------------------------------------------
+cpu: 10m # default from composer
+
+cloud_composer_autoscale.sh
+-------------------------------------------------------------------------------------------
+PROJECT=[provide your gcp project id]
+COMPOSER_NAME=[provide your composer environment name]
+COMPOSER_LOCATION=[provide the selected composer’s location e.g. us-central]
+CLUSTER_ZONE=[provide the selected composer’s zone e.g. us-central1-a]
+
+--max-nodes 10 \
+
+AFTER
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+MACHINE_TYPE used ="n1-standard-8" (double CPU and RAM) 
+also disk-size x5 default to = 500GB
+
+composer_airflow_worker_hpa.yaml
+-------------------------------------------------------------------------------------------
+no change
+
+composer_airflow_worker_patch.yaml
+-------------------------------------------------------------------------------------------
+no change
+
+cloud_composer_autoscale.sh
+-------------------------------------------------------------------------------------------
+PROJECT="d-dat-digitalaircrafttransport"
+COMPOSER_NAME="AF-KIWI-2019"
+COMPOSER_LOCATION="europe-west2"
+CLUSTER_ZONE="europe-west2-c"
+
+--max-nodes 20 \
+--add-maintenance-exclusion-name "2019-kiwi-build" \
+--add-maintenance-exclusion-start "2020-01-10T08:00:00Z" \
+--add-maintenance-exclusion-end "2020-01-23T07:59:00Z" \
+
+--update-pypi-packages-from-file=PyPi_req_AF_KIWI_2019.txt \
+
+
+
+
+
+

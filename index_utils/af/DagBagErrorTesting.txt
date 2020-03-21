@@ -1,0 +1,41 @@
+
+DAG BAG Error Testing
+=================================================
+
+DagBagErrorTestUSCopy.py worked  >  not a gen prob with new DAGs
+modf above to EU (default conn)  >  not a gen prob with EU datasets
+
+sbe-pipeline suddenly loading, so maybe cached error, will gradually uncomment sections
+uncomment	ymlBQCheck = readYML() > ok
+uncomment	rest, 2 x tasks and precedence > ERROR
+comment	BigQueryCheckOperator step > ERROR
+moved entire single and multi-line comments above with DAG > ERROR
+delete entire block above > ERROR
+
+
+ymlBQCheck = readYML()
+#TodayString = "'{{ ds }}'"
+
+
+	# https://issues.apache.org/jira/browse/AIRFLOW-67
+	# DagBag error when use jinja template eg. {{ ds }} in operator parameter
+
+	t1_BQCheckBool_Table1 = BigQueryCheckOperator(
+		task_id = 't1_BQCheckBool_Table1',
+		sql = ymlBQCheck['Table1']['sqlBase'].format(date_col = ymlBQCheck['Table1']['date_col'])
+
+
+	t2FlatInsert = BigQueryOperator(
+		task_id = 't2FlatInsert',
+		location = 'europe-west2',
+		sql = sql,
+		use_legacy_sql = False
+	)
+
+	
+	
+
+	pyReadYML = PythonOperator(
+		task_id = 'pyReadYML', 
+		python_callable = readYML
+	)

@@ -1,0 +1,2 @@
+forex_python>=1.5.0
+datalab>=1.1.5

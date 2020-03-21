@@ -1,0 +1,1 @@
+gcloud composer environments update d-dat-af-dev --update-pypi-packages-from-file ./191205_PyPi_req.txt --location europe-west2

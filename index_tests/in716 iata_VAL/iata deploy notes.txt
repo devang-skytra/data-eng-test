@@ -1,0 +1,36 @@
+
+
+--NB: In this sp, from_date and to_date are informative (for Logging
+CALL iata_VAL.sp_process_X3('2019-02-01', '2019-02-07', '', false);
+
+
+DECLARE from_date DATE DEFAULT '2019-02-01'; DECLARE to_date DATE DEFAULT '2019-02-07'; 
+CALL iata_VAL.sp_process_I1(from_date, to_date, false);
+
+DECLARE from_date DATE DEFAULT '2019-02-01'; DECLARE to_date DATE DEFAULT '2019-02-07'; 
+CALL iata_VAL.sp_process_I2(from_date, to_date, false);
+
+DECLARE from_date DATE DEFAULT '2019-02-01'; DECLARE to_date DATE DEFAULT '2019-02-07'; 
+CALL iata_VAL.sp_process_I3(from_date, to_date, false);
+
+
+
+
+FinalOutput_2019-02-01_w_2019-02-07_Global.csv
+{
+"autodetect": false,
+"csvOptions": {
+  "allowJaggedRows": false,
+  "allowQuotedNewlines": false,
+  "encoding": "UTF-8",
+  "fieldDelimiter": ",",
+  "quote": "\"",
+  "skipLeadingRows": 1
+},
+"ignoreUnknownValues": false,
+"sourceFormat": "CSV",
+"sourceUris": ["gs://ext-iata-excl-data/2019/unzipped/FinalOutput_2019-02-01_w_2019-02-07_Global.csv"]
+}
+
+
+bq mk --external_table_definition=./iata.ext_iata_csv_1w.json --schema ./iata.X1.json iata_VAL.ext_iata_csv

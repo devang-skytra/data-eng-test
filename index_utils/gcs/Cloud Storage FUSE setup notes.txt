@@ -1,0 +1,28 @@
+
+https://cloud.google.com/storage/docs/gcs-fuse#using
+
+1.
+
+Setting up gcsfuse (0.28.1) ...
+paul_desmond_skytra_com@iata:~$ sudo usermod -a -G fuse $USER
+usermod: group 'fuse' does not exist
+
+2.
+
+Service account: 156629557333-compute@developer.gserviceaccount.com
+Cloud API access scopes
+Allow full access to all Cloud APIs
+
+
+During testing we setup this...
+-----------------------------------------------------------
+
+fusectl /sys/fs/fuse/connections fusectl rw,relatime 0 0
+ext-iata-excl-data /home/airbus/ext_iata_excl_data fuse rw,nosuid,nodev,relatime                                                                             ,user_id=1660269708,group_id=1660269708,default_permissions 0 0
+
+
+If confident won't impact anything...
+(concern is I cannot access /home/airbus/ext_iata_excl_data above anymore)
+, next step for Prod would be...
+-----------------------------------------------------------
+gcsfuse ext_iata_excl_data /home/svc_iinet
