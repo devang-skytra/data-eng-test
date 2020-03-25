@@ -99,12 +99,13 @@ sudo gsutil -m cp $filePrefix.csv gs://ext-iata-excl-data/2020/unzipped
 sudo gsutil -m cp $filePrefix.csv_sum.csv gs://ext-iata-excl-stat
 
 
-insert into iata.int_X1_file_analysis 
-select *, 
+insert into data_eng.in820_X1
+--iata.int_X1_file_analysis 
+select * 
 --EXCEPT(DOC_AMOUNT_TYPE_INDICATOR)
-_FILE_NAME as FILE_SOURCE 
+, _FILE_NAME as FILE_SOURCE 
 from iata.ext_data
-where _FILE_NAME like '%FinalOutput_2020-03-16_w_2020-03-22_Global%'
+where _FILE_NAME like '%FinalOutput_2020-01-01_w_2020-03-15_missing_tkts_Global.csv'
 
 --CALL iata_sp.sp_process_X3('2020-03-09', '2020-03-15', 'FinalOutput_2020-03-09_w_2020-03-15_Global', 'gs://ext-iata-excl-data/2020/loaded_to_bq/');
 --CALL iata_sp.sp_process_I1('2020-03-09', '2020-03-15', 'FinalOutput_2020-03-09_w_2020-03-15_Global.csv');
