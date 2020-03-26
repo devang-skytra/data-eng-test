@@ -166,5 +166,29 @@ ffd_min	ffd_max	Xcount
 2020-03-03
 23,380
 
+--868
 
---drop table kiwi_PROD.X5b_2019
+--Visually confirmed 1,236,867,161,793 in PROD ? = YES
+
+--check one month against Migrated = YES (see below)
+SELECT FORMAT_DATE('%Y%m', search_date) as Xdate, count(*) as Xcount FROM kiwi.X5b 
+WHERE search_date between "2020-02-01" and "2020-02-29" group by 1
+
+Xdate	Xcount	
+
+202002
+205,982,011,000
+205,982,011,000
+
+
+--864,869,876
+SELECT CONCAT('bq rm -f -t ',table_schema,'.',table_name) 
+FROM 
+--kiwi_PROD
+kiwi
+--KIWI_full_process
+.INFORMATION_SCHEMA.TABLES 
+WHERE table_name not in('') 
+
+
+
