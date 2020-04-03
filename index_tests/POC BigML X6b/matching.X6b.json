@@ -1,0 +1,167 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "pl_id",
+    "type": "INTEGER",
+    "description": "Unique when combined with ds, tb, dateFrom, is also used as a foreign key in the Fact Destination table"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ticket_id",
+    "type": "STRING",
+    "description": "Unique ticket ID, representing an itinerary"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "region_pair",
+    "type": "STRING",
+    "description": "Itinerary category, expressed as a connexion of 2 large traffic region continents"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "dt_of_issue",
+    "type": "DATE",
+    "description": "The date of the ticket issue (or exchange or refund)"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "nb_legs",
+    "type": "INTEGER",
+    "description": "Number of flights in the itinerary"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "leadtime",
+    "type": "INTEGER",
+    "description": "Number of days between issue date (considered local) and the first flight of the itinerary"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "first_flight_date_utc",
+    "type": "DATE",
+    "description": "Date of first flight of journey expressed as UTC date"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "journey_map",
+    "type": "STRING",
+    "description": "Concatenation of all leg map (aggregation of flight departure datetime, airport codes and class ) within the itinerary"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "classless_journey_map",
+    "type": "STRING",
+    "description": "Same as journey_map without the class information"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "sumP",
+    "type": "FLOAT",
+    "description": "Total price in USD associated to the itinerary by IATA"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "od_mile",
+    "type": "FLOAT",
+    "description": "Total distance in miles"
+  },
+  {
+     "mode": "NULLABLE",
+     "name": "leg_prices",
+     "type": "STRING",
+    "description": "Ordered list by itinerary of individual flight prices in USD"
+   },
+   {
+     "mode": "NULLABLE",
+     "name": "leg_miles",
+     "type": "STRING",
+    "description": "Ordered list of by itinerary individual flight distances in miles"
+   },
+   {
+     "mode": "NULLABLE",
+     "name": "mkt_carrier_code_list",
+     "type": "STRING",
+    "description": "Ordered list of by itinerary individual flight 2 letter code identifying the marketing carrier associated to the flight"
+   },
+   {
+     "mode": "NULLABLE",
+     "name": "operating_carrier_list",
+     "type": "STRING",
+    "description": "Ordered list of by itinerary individual flight 2 letter code identifying the operating carrier associated to the flight"
+   },
+   {
+     "mode": "NULLABLE",
+     "name": "mkt_carrier",
+     "type": "STRING",
+    "description": "List by itinerary of unique marketing carrier"
+   },
+   {
+     "mode": "NULLABLE",
+     "name": "op_carrier",
+     "type": "STRING",
+    "description": "List by itinerary of unique operating carrier"
+   },
+   {
+     "mode": "NULLABLE",
+     "name": "n_pkg",
+     "type": "INTEGER",
+    "description": "Number of KIWI package prices used to price the tinerary"
+   },
+   {
+     "mode": "NULLABLE",
+     "name": "price",
+     "type": "FLOAT",
+    "description": "KIWI price in euro"
+   },
+   {
+     "mode": "NULLABLE",
+     "name": "key_type",
+     "type": "STRING",
+    "description": "Category indicating the key used for matching, can take value classfull (if the class information could be used) classless otherwise"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "distribution_channel",
+    "type": "STRING",
+    "description": "Medium of the sale can take value AAGT (ARC/ASP saler), BAGT (IATA/BSP sale), IND ( Indirect sale, missing agency code number), DIR (Carrier direct sale), WEB (Carrier)"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "source_code",
+    "type": "STRING",
+    "description": "Origin of the sale takes values 1 ( ASP-settled transaction), 2 (Carrier-contributed Direct transaction) , 3 (BSP-settled transaction) or 4 (Carrier-contributed Indirect transaction)"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ticket_document_amount",
+    "type": "FLOAT",
+    "description": "Total amont charged for the itinerary in USD"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "FILE_SOURCE",
+    "type": "STRING",
+    "description": "IATA file that the row came in so can analyse dt_of_issue lag, relationship to first_flight_date etc"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "true_origin",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "stopover_code",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "time_of_day",
+    "type": "STRING"
+  },
+   {
+     "mode": "NULLABLE",
+     "name": "prediction_price",
+     "type": "FLOAT",
+    "description": "BQML PREDICT output"
+   }
+ ]

@@ -158,6 +158,8 @@ matching.X6
 2020-02-29
 3,254,855,146
 
+--Confirmed post Merge ? = YES
+
 --872
 SELECT min(first_flight_date) as ffd_min, max(first_flight_date) as ffd_max, count(*) as Xcount FROM index.X7
 
@@ -165,6 +167,8 @@ ffd_min	ffd_max	Xcount
 2017-11-20
 2020-03-03
 23,380
+
+--Confirmed post Merge ? = YES
 
 --868
 

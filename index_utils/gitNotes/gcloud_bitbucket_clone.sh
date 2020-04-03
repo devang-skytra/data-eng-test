@@ -7,6 +7,7 @@ git clone https://skydesmo@bitbucket.org/skydesmo/dataeng.git
 #git checkout -- path/to/file/to/revert
 
 cd indexproduction
+git config --global credential.helper 'cache --timeout=30000'
 git pull origin
 
 paul.desmond@skytra.com
