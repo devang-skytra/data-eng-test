@@ -84,26 +84,44 @@ cloud console
 gsutil -m mv gs://ext-iata-excl-data/2020/zipped/$filePrefix.csv.gz - | gunzip | gsutil cp - gs://ext-iata-excl-data/2020/unzipped/$filePrefix.csv
 WRONG - cloud console has limits so need to unzip in VM and transfer both zip and unzip
 
-putty
-----------
+#carefully move big folder hier
+#gsutil -m mv gs://index_bucket_1/KIWI/2017_10 gs://ext-kiwi-excl-data/data/2017/10
+
+
+
+
+
+#putty
+#-----------
 cd /home/svc_iinet 
 ls -lh
 
-filePrefix="FinalOutput_2020-03-23_w_2020-03-29_Global"
+filePrefix="FinalOutput_2020-04-06_w_2020-04-12_Global"
 sudo gunzip -k $filePrefix.csv.gz
 
 sudo gsutil -m cp $filePrefix.csv gs://ext-iata-excl-data/2020/unzipped
 
-#sudo gsutil -m cp $filePrefix.csv.gz gs://ext-iata-excl-data/2020/zipped
-
 sudo gsutil -m cp $filePrefix.csv_sum.csv gs://ext-iata-excl-stat
 
-#NB: keep file in /unzipped until processed
+
+#cloud shell - quickly check schema ends with DOC_AMOUNT_TYPE_INDICATOR and DOI range looks ok
+#-----------
+fileFull="FinalOutput_2020-04-06_w_2020-04-12_Global.csv"
+gcsPath="gs://ext-iata-excl-data/2020/unzipped/"
+gsutil cat -r 0-2000 $gcsPath$fileFull
+
+
+
+#bq gui
+#-----------
 
 select * 
 from stat.iata_stats
-where _FILE_NAME like '%FinalOutput_2020-03-23_w_2020-03-29_Global.csv_sum.csv'
+where _FILE_NAME like '%FinalOutput_2020-04-06_w_2020-04-12_Global.csv_sum.csv'
 
+
+DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-04-06_w_2020-04-12_Global.csv';
+#DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-03-22_w_2020-03-29_missing_tkts_2_Global.csv';
 
 insert into 
 iata.int_X1_file_analysis 
@@ -112,20 +130,38 @@ EXCEPT(DOC_AMOUNT_TYPE_INDICATOR)
 , _FILE_NAME as FILE_SOURCE 
 , DOC_AMOUNT_TYPE_INDICATOR
 from iata.ext_data
-where _FILE_NAME like '%FinalOutput_2020-03-23_w_2020-03-29_Global.csv'
-
-#SELECT FARE_TYPE_INDICATOR, DOC_AMOUNT_TYPE_INDICATOR, count(*) FROM `d-dat-digitalaircrafttransport.iata.int_X1_file_analysis` WHERE dt_of_issue >= "2020-03-23" AND file_source like '%FinalOutput_2020-03-23_w_2020-03-29_Global.csv' GROUP BY 1,2
+where _FILE_NAME like CONCAT('%',fileFull);
 
 
-#NB: now you can move file out of /unzipped into /loaded_to_bq
+#cloud shell - move file
+#-----------
+echo $gcsPath
+gcsDest="gs://ext-iata-excl-data/2020/loaded_to_bq"
+gsutil mv -r $gcsPath* $gcsDest
 
-CALL iata_sp.sp_process_X3('2020-03-23', '2020-03-29', 'FinalOutput_2020-03-23_w_2020-03-29_Global', 'gs://ext-iata-excl-data/2020/unzipped/');
-CALL iata_sp.sp_process_I1('2020-03-23', '2020-03-29', 'FinalOutput_2020-03-23_w_2020-03-29_Global.csv');
 
-#gsutil -m mv gs://index_bucket_1/KIWI/2017_10 gs://ext-kiwi-excl-data/data/2017/10
+#bq gui
+#-----------
 
-gsutil cat -r 0-2000 gs://ext-iata-excl-data/2020/loaded_to_bq/FinalOutput_2020-03-16_w_2020-03-22_Global.csv
+#DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-03-22_w_2020-03-29_missing_tkts_2_Global.csv';
+#DECLARE dS DATE DEFAULT '2020-03-22';
+#DECLARE dE DATE DEFAULT '2020-03-29';
 
+DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-04-06_w_2020-04-12_Global.csv';
+DECLARE dS DATE DEFAULT '2020-04-06';
+DECLARE dE DATE DEFAULT '2020-04-12';
+
+CALL iata_sp.sp_process_X3(dS, dE, fileFull, 'gs://ext-iata-excl-data/2020/unzipped/');
+select min(dt_of_issue) from iata.X3 where FILE_SOURCE like CONCAT('%',fileFull) and dt_of_issue > '2000-01-01'
+
+CALL iata_sp.sp_process_I1(dS, dE, fileFull);
+CALL iata_sp.sp_process_I2(dS, dE, fileFull);
+CALL iata_sp.sp_process_I3(dS, dE, fileFull);
+
+#select dt_of_issue, pl_id, count(*) from matching.X6 where dt_of_issue >= '2020-03-30' group by 1,2 order by 1,2
+DECLARE dS DATE DEFAULT '2020-03-30';
+DECLARE dE DATE DEFAULT '2020-04-08';
+CALL matching_sp.sp_process_X6(dS, dE);
 
 
 
