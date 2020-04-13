@@ -87,7 +87,7 @@ bkt_dst="gs://fxrates-dev"
 wild="/*"
 gsutil -m cp -R $bkt_src$wild $bkt_dst
 
-#fxrates
+#spot-windows
 bkt_src="gs://spot_windows"
 bkt_dst="gs://spot-windows-dev"
 wild="/*"
@@ -132,7 +132,8 @@ gcs2="gs://d-dat-data-eng-dev/bq-extract/"
 ext="CSV"
 
 #tbl="generic.api_username"
-tbl="generic.skytra_distance_table"
+#tbl="generic.skytra_distance_table"
+tbl="stat.metric_dim"
 fle=$tbl.$ext
 json=$tbl.json
 bq show --schema --format=prettyjson $tbl > $json
