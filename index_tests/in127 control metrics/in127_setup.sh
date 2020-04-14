@@ -1,8 +1,11 @@
-#help avail at C:\Users\pdesmond\Documents\Schema Migration Utilities.xlsx
 
-# 1. use cloudshell and   ** cd indexproduction **              which is joined direct to BitBucket and entire script assumes cwd is indexproduction
-# 2. ensure you           ** git branch  then  git checkout <correct branch>  **  with changes you are testing
-# 3. set correct var vals for test below
+# use cloudshell and indexproduction cloned direct from BitBucket 
+
+# how skytra-benchmark-devandtest:scratch_PaD works
+#-----------------------------
+# scratch_PaD.log_sql_RECON is the key linking everything together for reveiwers - shows details of the test case and the # automated history of testing of new code vs as at time hotfix_production code linked to BitB branch
+#   scratch_PaD.in127_X4_RECON - single parquet file for fast test iteration day results - empty = no effect SUCCESS
+#   scratch_PaD.in127_full_X4_RECON - full day results - empty = no effect SUCCESS
 
 
 # FIRST STEP GIT PULL
