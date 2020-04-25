@@ -5,7 +5,8 @@ bq mk --table --time_partitioning_field first_flight_date_utc --schema ./matchin
 bq query --allow_large_results --append_table --use_legacy_sql=false --destination_table skytra-benchmark-rnd:scratch_PhD.X6_for_BQ_linear_reg_ptn "select * FROM skytra-benchmark-rnd.scratch_PhD.X6_for_BQ_linear_reg"
 
 
-bq mk --table --time_partitioning_field first_flight_date_utc --clustering_fields region_pair --schema ./matching.X6b.json scratch_PhD.X6a_MODEL
+#delete scratch_PhD.X6a_MODEL where first_flight_date_utc >= '1970-01-01'
+bq mk --table --time_partitioning_field first_flight_date_utc --clustering_fields region_pair --schema ./matching.X6b.json scratch_PhD.X6a_MODEL 
 bq mk --table --time_partitioning_field first_flight_date_utc --clustering_fields region_pair --schema ./matching.X6b.json scratch_PhD.X6a_PREDICT
 #add predicted_price column to X6b.json for X6b
 bq mk --table --time_partitioning_field first_flight_date_utc --clustering_fields region_pair --schema ./matching.X6b.json scratch_PhD.X6b

@@ -66,8 +66,8 @@ gsutil -m cp -R $bkt_src$wild $bkt_dst
 #kiwi
 bkt_src="gs://ext-kiwi-excl-data"
 bkt_dst="gs://ext-kiwi-excl-dev-data"
-pfx_src="/data/y=2020/m=01/d=01/"
-pfx_dst="/data/y=2020/m=01/d=01/"
+pfx_src="/data/y=2020/m=04/d=01/"
+pfx_dst="/data/y=2020/m=04/d=01/"
 wild="*"
 #Unable to delete 100 objects because they haven't reached their retention expiration dates yet. Expires 24 hrs after creation
 #gsutil -m rm $bkt_dst$pfx_dst$wild
@@ -87,19 +87,11 @@ bkt_dst="gs://fxrates-dev"
 wild="/*"
 gsutil -m cp -R $bkt_src$wild $bkt_dst
 
-#fxrates
+#spot-windows
 bkt_src="gs://spot_windows"
 bkt_dst="gs://spot-windows-dev"
 wild="/*"
 gsutil -m cp -R $bkt_src$wild $bkt_dst
-
-
-#Migrated
-bq extract
-gsutil cp
-#devandtest
-mk tb
-bq load (or load has .json option? Yes, however simpler to separate if options like partitioning etc)
 
 
 
@@ -128,25 +120,66 @@ SELECT * FROM `d-dat-digitalaircrafttransport.log.__TABLES__` UNION ALL
 SELECT * FROM `d-dat-digitalaircrafttransport.matching.__TABLES__` UNION ALL
 
 
-'ext_EURUSD','api_username','holiday_calendar','iata_rrpk_filter_model','kiwi_rrpk_filter_model',
-'long_skytra_distance_table','skytra_distance_table','split_layout','spot_window_regions_ext'
+#generic
+#git checkout feature/IN-917-build-source-code-for-all-old-non
 
-#external tables
-'ext_EURUSD',
-iata.ext_data
-kiwi.ext_data
+loc1="EU"
+loc2="europe-west2"
+prj1="d-dat-digitalaircrafttransport"
+prj2="skytra-benchmark-devandtest"
+gcs1="gs://d-dat-data-eng/bq-extract/"
+gcs2="gs://d-dat-data-eng-dev/bq-extract/"
+ext="CSV"
+
+#tbl="generic.api_username"
+#tbl="generic.skytra_distance_table"
+tbl="stat.metric_dim"
+fle=$tbl.$ext
+json=$tbl.json
+bq show --schema --format=prettyjson $tbl > $json
+
+bq --location=$loc1 extract --destination_format $ext $tbl $gcs1$fle
+gsutil cp $gcs1$fle $gcs2
+
+bq show --schema --format=prettyjson $tbl > $json
+git stage $json
+git commit $json -m "adding $json"
+echo "bq load --source_format=$ext --skip_leading_rows=1 $tbl $gcs2$fle $json"
+
+# run echo'ed string in skytra-benchmark-devandtest window
 
 
-iata.I1
-iata.I2
-iata.I3
+
+#source control
+iata_rrpk_filter_model
+kiwi_rrpk_filter_model
+long_skytra_distance_table
+skytra_distance_table
+
+#source control and migrate
+[done] api_username 
+[done] split_layout
+[done] spot_window_regions_ext 
+  generic.spot_window_regions_ext_schema.json
+  bq show --schema --format=prettyjson generic.spot_window_regions_ext > generic.spot_window_regions_ext_schema.json
+
+
+
 iata.int_X1_file_analysis
-iata.X1_2020_late_arriving_tickets
-iata.X3
 
 index.X7
 
-
-
 matching.X6 
+
+
+
+
+gcs1="gs://d-dat-data-eng/bq-extract/"
+gcs2="gs://d-dat-data-eng-dev/bq-extract"
+
+gsutil cp $gcs1* $gcs2
+
+bq load --source_format=CSV --skip_leading_rows=1 iata.I3 gs://d-dat-data-eng-dev/bq-extract/I3_20200401.csv
+
+
 
