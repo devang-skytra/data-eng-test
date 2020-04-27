@@ -96,7 +96,7 @@ WRONG - cloud console has limits so need to unzip in VM and transfer both zip an
 cd /home/svc_iinet 
 ls -lh
 
-filePrefix="FinalOutput_2020-04-13_w_2020-04-19_Global"
+filePrefix="FinalOutput_2020-04-20_w_2020-04-26_Global"
 sudo gunzip -k $filePrefix.csv.gz
 
 sudo gsutil -m cp $filePrefix.csv gs://ext-iata-excl-data/2020/unzipped
@@ -106,7 +106,7 @@ sudo gsutil -m cp $filePrefix.csv_sum.csv gs://ext-iata-excl-stat
 
 #cloud shell - quickly check schema ends with DOC_AMOUNT_TYPE_INDICATOR and DOI range looks ok
 #-----------
-fileFull="FinalOutput_2020-04-13_w_2020-04-19_Global.csv"
+fileFull="FinalOutput_2020-04-20_w_2020-04-26_Global.csv"
 gcsPath="gs://ext-iata-excl-data/2020/unzipped/"
 gsutil cat -r 0-2000 $gcsPath$fileFull
 
@@ -117,10 +117,10 @@ gsutil cat -r 0-2000 $gcsPath$fileFull
 
 select * 
 from stat.iata_stats
-where _FILE_NAME like '%FinalOutput_2020-04-13_w_2020-04-19_Global.csv_sum.csv'
+where _FILE_NAME like '%FinalOutput_2020-04-20_w_2020-04-26_Global.csv_sum.csv'
 
 
-DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-04-13_w_2020-04-19_Global.csv';
+DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-04-20_w_2020-04-26_Global.csv';
 #DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-03-22_w_2020-03-29_missing_tkts_2_Global.csv';
 
 insert into 
@@ -147,20 +147,22 @@ gsutil mv -r $gcsPath* $gcsDest
 #DECLARE dS DATE DEFAULT '2020-03-22';
 #DECLARE dE DATE DEFAULT '2020-03-29';
 
-DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-04-13_w_2020-04-19_Global.csv';
-DECLARE dS DATE DEFAULT '2020-04-13';
-DECLARE dE DATE DEFAULT '2020-04-19';
+DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-04-20_w_2020-04-26_Global.csv';
+DECLARE dS DATE DEFAULT '2020-04-20';
+DECLARE dE DATE DEFAULT '2020-04-26';
 
 CALL iata_sp.sp_process_X3(dS, dE, fileFull, 'gs://ext-iata-excl-data/2020/unzipped/');
-select min(dt_of_issue), max(dt_of_issue) from iata.X3 where FILE_SOURCE like CONCAT('%',fileFull) and dt_of_issue > '2000-01-01'
+--select min(dt_of_issue), max(dt_of_issue) from iata.X3 where FILE_SOURCE like CONCAT('%',fileFull) and dt_of_issue > '2000-01-01'
 
 CALL iata_sp.sp_process_I1(dS, dE, fileFull);
 CALL iata_sp.sp_process_I2(dS, dE, fileFull);
 CALL iata_sp.sp_process_I3(dS, dE, fileFull);
 
+
+
 #select dt_of_issue, pl_id, count(*) from matching.X6 where dt_of_issue >= '2020-03-30' group by 1,2 order by 1,2
-DECLARE dS DATE DEFAULT '2020-04-05';
-DECLARE dE DATE DEFAULT '2020-04-15';
+DECLARE dS DATE DEFAULT '2020-04-01';
+DECLARE dE DATE DEFAULT '2020-04-22';
 CALL matching_sp.sp_process_X6(dS, dE);
 
 
