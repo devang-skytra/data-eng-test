@@ -1,0 +1,147 @@
+I1
+-
+pl_id INT64 
+ticket_id PK STRING
+segment_id PK INT64 
+dt_of_issue DATE UNIQUE 
+leadtime INT64 
+nb_legs INT64 
+region_pair STRING 
+flight_datetime_utc TIMESTAMP 
+flight_datetime_local DATETIME 
+leg_map STRING 
+classless_leg_map STRING 
+reg_seg_fare FLOAT64 
+segment_mile FLOAT64 
+operating_carrier STRING 
+mkt_carrier_code STRING 
+distribution_channel STRING 
+source_code STRING 
+ticket_document_amount FLOAT64 
+FILE_SOURCE STRING 
+
+I2
+-
+pl_id INT64 
+ticket_id PK STRING
+region_pair STRING 
+dt_of_issue DATE UNIQUE FK - X5b.search_date
+nb_legs INT64 
+leadtime INT64 
+first_flight_date_utc DATE 
+journey_map STRING FK - X5b.journey_map
+classless_journey_map STRING 
+sumP FLOAT64 
+od_mile FLOAT64 
+leg_prices STRING 
+leg_miles STRING 
+mkt_carrier_code_list STRING 
+operating_carrier_list STRING 
+mkt_carrier STRING 
+op_carrier STRING 
+distribution_channel STRING 
+source_code STRING 
+ticket_document_amount FLOAT64 
+FILE_SOURCE STRING 
+
+I3
+-
+pl_id INT64 
+ticket_id PK STRING
+dt_of_issue DATE UNIQUE 
+split STRING 
+n_pkg INT64 
+pkg STRING 
+package_map STRING 
+classless_package_map STRING 
+FILE_SOURCE STRING 
+
+X7
+-
+pl_id INT64 
+region_pair PK STRING FK -< X6.region_pair
+first_flight_date PK DATE FK -< X6.first_flight_date_utc
+iata_index FLOAT64 
+skytra_index FLOAT64 
+iata_rpk FLOAT64 
+skytra_rpk FLOAT64 
+iata_tickets INT64 
+skytra_tickets INT64 
+skytra_coverage FLOAT64 
+metric_code STRING 
+metric_value NUMERIC 
+
+X7_IATA_2013_2020
+-
+pl_id INT64 
+region_pair PK STRING FK - X6.region_pair
+first_flight_date PK DATE FK - X6.first_flight_date_utc
+IATA_RRPK_USD FLOAT64 
+IATA_TOT_RPK FLOAT64 
+iata_tickets INT64 
+metric_code STRING 
+metric_value NUMERIC 
+
+X7_IATA_dt_of_issue
+-
+pl_id INT64 
+region_pair PK STRING FK - X6.region_pair
+dt_of_issue PK DATE FK - X6.dt_of_issue 
+iata_index FLOAT64 
+skytra_index FLOAT64 
+iata_rpk FLOAT64 
+skytra_rpk FLOAT64 
+iata_tickets INT64 
+skytra_tickets INT64 
+skytra_coverage FLOAT64 
+metric_code STRING 
+metric_value NUMERIC 
+
+X7_composite_adjusted_v4_4
+-
+pl_id INT64 
+first_flight_date PK DATE 
+region_pair PK STRING 
+skytra_index FLOAT64 
+skytra_benchmark FLOAT64 
+skytra_issued_index FLOAT64 
+skytra_issued_benchmark FLOAT64 
+metric_code STRING 
+metric_value NUMERIC 
+
+X5b
+-
+pl_id INT64 
+search_date PK DATE 
+journey_map PK STRING 
+price FLOAT64
+classless_price FLOAT64 
+skytra_search FLOAT64 
+
+X6
+-
+pl_id INT64 
+ticket_id STRING FK - I2.ticket_id
+region_pair STRING UNIQUE
+dt_of_issue DATE UNIQUE 
+nb_legs INT64 
+leadtime INT64 
+first_flight_date_utc DATE UNIQUE
+journey_map STRING 
+classless_journey_map STRING 
+sumP FLOAT64 
+od_mile FLOAT64 
+leg_prices STRING 
+leg_miles STRING 
+mkt_carrier_code_list STRING 
+operating_carrier_list STRING 
+mkt_carrier STRING 
+op_carrier STRING 
+n_pkg INT64 
+price FLOAT64 FK - X5b.price
+key_type STRING 
+distribution_channel STRING 
+source_code STRING 
+ticket_document_amount FLOAT64 
+FILE_SOURCE STRING 
+skytra_search FLOAT64 

@@ -1,4 +1,4 @@
---bq ls --format=json | jq -r '.[] | select(.location == "EU") | .id' | sed 's/:/./' | sed 's/\(.*\)/SELECT * FROM `\1.__TABLES__` UNION ALL/'
+-bq ls --format=json | jq -r '.[] | select(.location == "EU") | .id' | sed 's/:/./' | sed 's/\(.*\)/SELECT * FROM `\1.__TABLES__` UNION ALL/'
 
 WITH allDsTables as (
 SELECT * FROM `d-dat-digitalaircrafttransport.10ct_test.__TABLES__` UNION ALL

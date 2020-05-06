@@ -6,18 +6,11 @@
 #  False/True indicating whether deploy eg. after sed changes, 
 #   ie. can be goog to check sed result before deploying
 
-'''
-cd ~/dataeng/index_utils/af/dagDevOps  && \
- bash dagDevOps.sh dag_X7multi_Weekly def DEV True True
+# cd ~/dataeng/index_utils/af/dagDevOps && bash dagDevOps.sh dag_X7multi_Weekly def DEV True True
 
-bash dagDevOps.sh dag_IATA_Weekly def DEV True False
-
-cp ~/ops/af/dags/sample*.py ~/dataeng/index_tests/cloudshell_ops_copy/af/dags/
-cp ~/ops/af/dags/watch*.py ~/dataeng/index_tests/cloudshell_ops_copy/af/dags/
-'''
-
-echo '1' && \
-    echo '2'
+# bash dagDevOps.sh dag_IATA_Weekly def DEV True False
+# cp ~/ops/af/dags/sample*.py ~/dataeng/index_tests/cloudshell_ops_copy/af/dags/
+# cp ~/ops/af/dags/watch*.py ~/dataeng/index_tests/cloudshell_ops_copy/af/dags/
 
 baseDAG=$1
 
@@ -69,7 +62,7 @@ if [ $5 = "True" ]
 then
     gsutil cp $sufDAG_py $gccDAG_p
     #if EXPORT of vars doesn't work can use this
-    #gsutil cp $opsDAG_p'*1635.py' $gccDAG_p
+    #gsutil cp ~/ops/af/dags/*_nonEU.py gs://europe-west2-benchmark-devt-6ca0db0f-bucket/dags
 fi
 
 echo $baseDAG_suf

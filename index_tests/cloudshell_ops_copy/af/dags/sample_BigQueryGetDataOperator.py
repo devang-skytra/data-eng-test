@@ -38,12 +38,14 @@ with DAG('sample_BigQueryGetDataOperator', schedule_interval = None, catchup = T
         max_results = '1'
     )
 
-    bashEchoList = mk_bash_generic('EchoList', '{{ ti.xcom_pull("Get-ParamsX7")[0][1] }}' )
+    bashEchoList = mk_bash_generic('EchoList', '{{ ti.xcom_pull("Get-ParamsX7")[0] }}' )
 
     pyGetTsX7i = PythonOperator(task_id = 'Get-TsX7i', python_callable = getTS, xcom_push = True)
 
     bashEcho2 = mk_bash_generic('bashEcho2', '{{ ti.xcom_pull("Get-TsX7i")[0] }}' )
 
+    bashEchoMacro = mk_bash_generic('Macro', '{{ macros.ds_add(ti.xcom_pull("Get-ParamsX7")[0][2], 6) }}' )
+
     # PRECEDENCE 
     bqGetParamsX7 >> bashEchoList
-    pyGetTsX7i >> bashEcho2
+    pyGetTsX7i >> [bashEcho2, bashEchoMacro]
