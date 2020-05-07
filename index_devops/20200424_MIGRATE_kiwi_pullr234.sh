@@ -1,4 +1,6 @@
 
+gcloud config set core/project d-dat-digitalaircrafttransport
+
 # extend X5b retention
 #-------------------------------------
 
@@ -55,6 +57,26 @@ select count(*) from kiwi.X5b_archive where search_date >= "2020-04-01"
 select * from kiwi.X5b_archive where search_date >= "2020-04-01"
 
 select * from kiwi.X5b where search_date >= "2020-04-01"
+
+
+
+
+# do remainder on 2020-04-28 in1101
+#-------------------------------------
+
+start=`date +%s`
+
+bq query --destination_table kiwi.X5b --append_table --use_legacy_sql=false 'SELECT * EXCEPT(classless_journey_map) FROM kiwi.X5b_archive where search_date between "2020-01-01" and "2020-01-31"'
+
+bq query --destination_table kiwi.X5b --append_table --use_legacy_sql=false 'SELECT * EXCEPT(classless_journey_map) FROM kiwi.X5b_archive where search_date between "2019-12-01" and "2019-12-31"'
+
+bq query --destination_table kiwi.X5b --append_table --use_legacy_sql=false 'SELECT * EXCEPT(classless_journey_map) FROM kiwi.X5b_archive where search_date between "2019-11-01" and "2019-11-30"'
+
+bq query --destination_table kiwi.X5b --append_table --use_legacy_sql=false 'SELECT * EXCEPT(classless_journey_map) FROM kiwi.X5b_archive where search_date between "2019-10-01" and "2019-10-31"'
+
+bq query --destination_table kiwi.X5b --append_table --use_legacy_sql=false 'SELECT * EXCEPT(classless_journey_map) FROM kiwi.X5b_archive where search_date between "2019-09-01" and "2019-09-30"'
+
+
 
 
 
