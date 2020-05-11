@@ -41,7 +41,7 @@ gcloud config set core/project d-dat-digitalaircrafttransport
 bq mk --table --time_partitioning_field search_date --require_partition_filter --time_partitioning_expiration 30240000 --schema ./kiwi.X5b.json kiwi.X5b
 
 # consider --dry_run
-
+#--append_table (instead of --replace)
 bq query --dry_run --destination_table kiwi.X5b --append_table --use_legacy_sql=false 'SELECT * EXCEPT(classless_journey_map) FROM kiwi.X5b_archive where search_date = "2020-04-01"'
 
 etc

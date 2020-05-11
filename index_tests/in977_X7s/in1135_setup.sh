@@ -46,10 +46,10 @@ ds_pref=$dsTest.$inPrefix
 ds_tb=$ds_pref$tb
  
 sql="with 
-x   as (select region_pair, first_flight_date, FARM_FINGERPRINT( CONCAT( ROUND(iata_index,4), ROUND(skytra_index,4), ROUND(iata_rpk,4), ROUND(skytra_rpk,4), ROUND(iata_tickets,4), ROUND(skytra_tickets,4), ROUND(skytra_coverage,4) ) ) AS row_fingerprint 
+x   as (select region_pair, first_flight_date, FARM_FINGERPRINT( CONCAT( ROUND(iata_index,4), ROUND(skytra_index,4), ROUND(iata_rpk,1), ROUND(skytra_rpk,1), ROUND(iata_tickets,4), ROUND(skytra_tickets,4), ROUND(skytra_coverage,4) ) ) AS row_fingerprint 
 from "$ds"."$tb"), 
 
-xin as (select region_pair, first_flight_date, FARM_FINGERPRINT( CONCAT( ROUND(iata_index,4), ROUND(skytra_index,4), ROUND(iata_rpk,4), ROUND(skytra_rpk,4), ROUND(iata_tickets,4), ROUND(skytra_tickets,4), ROUND(skytra_coverage,4) ) ) AS row_fingerprint 
+xin as (select region_pair, first_flight_date, FARM_FINGERPRINT( CONCAT( ROUND(iata_index,4), ROUND(skytra_index,4), ROUND(iata_rpk,1), ROUND(skytra_rpk,1), ROUND(iata_tickets,4), ROUND(skytra_tickets,4), ROUND(skytra_coverage,4) ) ) AS row_fingerprint 
 from "$ds_tb") 
 
 SELECT 
@@ -79,6 +79,27 @@ test details   = scratch_PaD.log_sql_RECON
 
 
 
+# MANUAL TABLES, NUMERIC MIGRATION
+#=================================================================
+
+suffix="_pre_NUM_migrate"
+
+ds="index"
+tb="X7"
+tbd=$tb$suffix
+bq cp $ds.$tb $ds.$tbd
+
+tb="X7_IATA_index_2013_2020"
+tbd="X7_IATA_2013_2020"$suffix
+bq cp $ds.$tb $ds.$tbd
+
+tb="X7_dt_of_issue"
+tbd="X7_IATA_dt_of_issue"$suffix
+bq cp $ds.$tb $ds.$tbd
+
+tb="X7_composite_adjusted"
+tbd="X7_composite_adjusted_v4_4"$suffix
+bq cp $ds.$tb $ds.$tbd
 
 
 
