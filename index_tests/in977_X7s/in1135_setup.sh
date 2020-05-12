@@ -1,61 +1,86 @@
 
-gcloud config set core/project skytra-benchmark-rnd
-gcloud config set core/project skytra-benchmark-devandtest
+#gcloud config set core/project skytra-benchmark-rnd
 #gcloud config set core/project d-dat-digitalaircrafttransport
+
+gcloud config set core/project skytra-benchmark-devandtest
+
+cd indexproduction
+git pull origin
+brnch="IN-1091-update-af-dags-sq-for-logging-pa"
+git checkout $brnch
 
 
 # VARIABLES primary
+ds="d-dat-digitalaircrafttransport:index"
 dsTest="scratch_PaD_EU"
-ds="d-dat-digitalaircrafttransport.index"
-tb="X7_composite_adjusted_v4_4"
-inPrefix="in1135_"
+inPrefix="in113B_"
 
 # derived VARIABLES
-ds_pref=$dsTest.$inPrefix
 ds_tb=$ds_pref$tb
-
-
-#check results -  X7_composite_adjusted
-#=================================================================
-sql="with 
-x   as (select region_pair, date as first_flight_date, FARM_FINGERPRINT( CONCAT(skytra_index, skytra_benchmark, skytra_issued_index, skytra_issued_benchmark) ) AS row_fingerprint 
-from d-dat-digitalaircrafttransport.index.X7_composite_adjusted where date = '"$dt"'), 
-
-xin as (select region_pair, first_flight_date, FARM_FINGERPRINT( CONCAT(skytra_index, skytra_benchmark, skytra_issued_index, skytra_issued_benchmark) ) AS row_fingerprint 
-from "$ds_tb" where first_flight_date = '"$dt"') 
-
-SELECT 
-x.region_pair, x.first_flight_date, x.row_fingerprint,
-xin.region_pair as xin_region_pair, xin.first_flight_date as xin_first_flight_date, xin.row_fingerprint as xin_row_fingerprint, x.row_fingerprint = xin.row_fingerprint as match
-from x full outer join xin on x.region_pair = xin.region_pair and x.first_flight_date = xin.first_flight_date"
-
-bq query --location=EU --append_table --use_legacy_sql=false --destination_table $ds_tb'_RECON' $sql 
-
-# LOG $sql
-#   scratch_PaD.log_sql_RECON(jira STRING, checked_out STRING, GCSfilter STRING, sql STRING, ts TIMESTAMP)
-sqll=$(echo "$sql" | sed "s/'//g")
-log="select '"$inPrefix"' jira,'"$brnch"' checked_out,'NA' GCSfilter,'"$sqll"' sql,CURRENT_TIMESTAMP() ts"
-
-bq query --location=EU --append_table --use_legacy_sql=false --destination_table scratch_PaD_EU.log_sql_RECON $log
-
-
-#check results -  X7
-#=================================================================
-tb="X7"
 ds_pref=$dsTest.$inPrefix
-ds_tb=$ds_pref$tb
- 
+
+
+
+# SETUP
+#=================================================================
+tb="X7_new"
+tbd="X7"
+bq cp $ds.$tb $ds_pref$tbd
+
+tb="X7_DOI_no_spot"
+tbd=$tb
+bq cp $ds.$tb $ds_pref$tbd
+
+tb="X7_IATA"
+tbd=$tb
+bq cp $ds.$tb $ds_pref$tbd
+
+tb="X7_IATA_DOI_no_spot"
+tbd=$tb
+bq cp $ds.$tb $ds_pref$tbd
+
+tb="X7_RL_4_4"
+tbd=$tb
+bq cp $ds.$tb $ds_pref$tbd
+
+
+gcloud config set core/project skytra-benchmark-devandtest
+
+
+x6=matching.X6
+bq rm -t -f $x6
+bq cp d-dat-digitalaircrafttransport:$x6 $x6
+
+i2=iata.I2
+bq rm -t -f $i2
+bq cp d-dat-digitalaircrafttransport:$i2 $i2
+
+
+# X7
+#=================================================================
+tb="X7_new"
+tbd="X7"
+ds_tb=$ds_pref$tbd
+
+
+#check results - X7
+
+
+#fp="CONCAT( ROUND(iata_index,4), ROUND(skytra_index,4), ROUND(iata_rpk,4), ROUND(skytra_rpk,4), ROUND(iata_tickets,4), ROUND(skytra_tickets,4), ROUND(skytra_coverage,4) )"
+uk="CONCAT( region_pair, '|', first_flight_date )"
+fp="CONCAT( iata_index, skytra_index, iata_rpk, skytra_rpk, iata_tickets, skytra_tickets, skytra_coverage )"
+
 sql="with 
-x   as (select region_pair, first_flight_date, FARM_FINGERPRINT( CONCAT( ROUND(iata_index,4), ROUND(skytra_index,4), ROUND(iata_rpk,1), ROUND(skytra_rpk,1), ROUND(iata_tickets,4), ROUND(skytra_tickets,4), ROUND(skytra_coverage,4) ) ) AS row_fingerprint 
+x   as (select "$uk" as uk, FARM_FINGERPRINT( "$fp" ) as fp 
 from "$ds"."$tb"), 
 
-xin as (select region_pair, first_flight_date, FARM_FINGERPRINT( CONCAT( ROUND(iata_index,4), ROUND(skytra_index,4), ROUND(iata_rpk,1), ROUND(skytra_rpk,1), ROUND(iata_tickets,4), ROUND(skytra_tickets,4), ROUND(skytra_coverage,4) ) ) AS row_fingerprint 
+xin as (select "$uk" as uk, FARM_FINGERPRINT( "$fp" ) as fp 
 from "$ds_tb") 
 
 SELECT 
-x.region_pair, x.first_flight_date, x.row_fingerprint,
-xin.region_pair as xin_region_pair, xin.first_flight_date as xin_first_flight_date, xin.row_fingerprint as xin_row_fingerprint, x.row_fingerprint = xin.row_fingerprint as match
-from x full outer join xin on x.region_pair = xin.region_pair and x.first_flight_date = xin.first_flight_date"
+x.uk   as orig_ukey,   x.fp as orig_rowHash,
+xin.uk as test_ukey, xin.fp as orig_rowHash, x.fp = xin.fp as match
+from x full outer join xin on x.uk = xin.uk"
 
 bq query --location=EU --append_table --use_legacy_sql=false --destination_table $ds_tb'_RECON' $sql 
 
@@ -67,6 +92,38 @@ log="select '"$inPrefix"' jira,'"$brnch"' checked_out,'NA' GCSfilter,'"$sqll"' s
 bq query --location=EU --append_table --use_legacy_sql=false --destination_table scratch_PaD_EU.log_sql_RECON $log
 
  
+
+#check results - X7_RL_4_4
+#=================================================================
+tb="X7_new"
+tbd="X7"
+ds_tb=$ds_pref$tbd
+dt="2020-05-11"
+
+uk="CONCAT( region_pair, '|', date )"
+fp="CONCAT( skytra_index, skytra_benchmark, skytra_issued_index, skytra_issued_benchmark )"
+
+sql="with 
+x   as (select "$uk" as uk, FARM_FINGERPRINT( "$fp" ) as fp 
+from "$ds"."$tb" where date = '"$dt"'), 
+
+xin as (select "$uk" as uk, FARM_FINGERPRINT( "$fp" ) as fp 
+from "$ds_tb"    where date = '"$dt"')
+
+SELECT 
+x.uk   as orig_ukey,   x.fp as orig_rowHash,
+xin.uk as test_ukey, xin.fp as orig_rowHash, x.fp = xin.fp as match
+from x full outer join xin on x.uk = xin.uk"
+
+bq query --location=EU --append_table --use_legacy_sql=false --destination_table $ds_tb'_RECON' $sql 
+
+# LOG $sql
+#   scratch_PaD.log_sql_RECON(jira STRING, checked_out STRING, GCSfilter STRING, sql STRING, ts TIMESTAMP)
+sqll=$(echo "$sql" | sed "s/'//g")
+log="select '"$inPrefix"' jira,'"$brnch"' checked_out,'NA' GCSfilter,'"$sqll"' sql,CURRENT_TIMESTAMP() ts"
+
+bq query --location=EU --append_table --use_legacy_sql=false --destination_table scratch_PaD_EU.log_sql_RECON $log
+
 
 
 
@@ -79,66 +136,125 @@ test details   = scratch_PaD.log_sql_RECON
 
 
 
+
+
+
 # MANUAL TABLES, NUMERIC MIGRATION
 #=================================================================
 
-suffix="_pre_NUM_migrate"
-
-ds="index"
-tb="X7"
-tbd=$tb$suffix
-bq cp $ds.$tb $ds.$tbd
-
-tb="X7_IATA_index_2013_2020"
-tbd="X7_IATA_2013_2020"$suffix
-bq cp $ds.$tb $ds.$tbd
-
-tb="X7_dt_of_issue"
-tbd="X7_IATA_dt_of_issue"$suffix
-bq cp $ds.$tb $ds.$tbd
-
-tb="X7_composite_adjusted"
-tbd="X7_composite_adjusted_v4_4"$suffix
-bq cp $ds.$tb $ds.$tbd
+X7.sql -> index.X7
+X7_IATA.sql -> index.X7_IATA (was X7_IATA_index_2013_2020)
+X7_IATA_dt_of_issue.sql -> index.X7_IATA_DOI_no_spot (NEW table, does not exist)
+X7_dtissue_no_spot_window.sql (in DEV branch) -> index.X7_DOI_no_spot
+X7_researchlicense_4_4_0.sql -> index.X7_RL_4_4
+====================================================================================================
 
 
+pfx=aaa_pre_NUM_migrate_
+
+ds=index
+tb=X7
+tbd=$pfx'X7'
+#bq cp $ds.$tb $ds.$tbd
+bq rm -t -f $ds.$tb
+
+tb=X7_IATA_index_2013_2020
+tbd=$pfx'X7_IATA'
+#bq cp $ds.$tb $ds.$tbd
+bq rm -t -f $ds.$tb
+
+#NEW table, does not exist
+
+tb=X7_dt_of_issue
+tbd=$pfx'X7_DOI_no_spot'
+#bq cp $ds.$tb $ds.$tbd
+bq rm -t -f $ds.$tb
+
+tb=X7_composite_adjusted
+tbd=$pfx'X7_RL_4_4'
+#bq cp $ds.$tb $ds.$tbd
+bq rm -t -f $ds.$tb
 
 
-# ADDITIONAL SETUP
+WITH tbls as ( 
+SELECT table_schema, table_name FROM index.INFORMATION_SCHEMA.TABLES where table_name in ( 'X7', 'X7_IATA_index_2013_2020', 'X7_dt_of_issue', 'X7_composite_adjusted' )
+),
+
+cols as ( --INFORMATION_SCHEMA.TABLES INFORMATION_SCHEMA.COLUMNS INFORMATION_SCHEMA.COLUMN_FIELD_PATHS
+SELECT * FROM index.INFORMATION_SCHEMA.COLUMNS WHERE table_name in(select table_name from tbls)
+)
+
+--select * from cols
+
+select * from 
+(
+SELECT table_schema, table_name, CONCAT('bq query --location=EU --replace --use_legacy_sql=false --destination_table ', table_name, ' "select')  as c1, -1 as c2 FROM tbls
+UNION ALL
+SELECT table_schema, table_name, CONCAT('from ', table_name, '"')  as c1, 99 as c2 FROM tbls
+UNION ALL
+SELECT
+table_schema, table_name, CONCAT( IF(data_type='FLOAT64',CONCAT('CAST(',column_name,' AS NUMERIC) as column_name'),column_name), ',' ) as c1, ordinal_position as c2
+FROM cols
+)
+order by 1,2,4
+
+
+#========APPEND
+
+bq query --location=EU --append_table --use_legacy_sql=false --destination_table index.X7_new "select
+pl_id,
+region_pair,
+first_flight_date,
+CAST(iata_index AS NUMERIC) as iata_index,
+CAST(skytra_index AS NUMERIC) as skytra_index,
+CAST(iata_rpk AS NUMERIC) as iata_rpk,
+CAST(skytra_rpk AS NUMERIC) as skytra_rpk,
+iata_tickets,
+skytra_tickets,
+CAST(skytra_coverage AS NUMERIC) as skytra_coverage
+from index.X7"
+
+bq query --location=EU --append_table --use_legacy_sql=false --destination_table index.X7_IATA "select
+region_pair,
+first_flight_date,
+CAST(IATA_RRPK_USD AS NUMERIC) as IATA_RRPK_USD,
+CAST(IATA_TOT_RPK AS NUMERIC) as IATA_TOT_RPK,
+iata_tickets
+from index.X7_IATA_index_2013_2020"
+
+bq query --location=EU --append_table --use_legacy_sql=false --destination_table index.X7_RL_4_4 "select
+date,
+region_pair,
+CAST(skytra_index AS NUMERIC) as skytra_index,
+CAST(skytra_benchmark AS NUMERIC) as skytra_benchmark,
+CAST(skytra_issued_index AS NUMERIC) as skytra_issued_index,
+CAST(skytra_issued_benchmark AS NUMERIC) as skytra_issued_benchmark
+from index.X7_composite_adjusted"
+
+bq query --location=EU --append_table --use_legacy_sql=false --destination_table index.X7_DOI_no_spot "select
+region_pair,
+dt_of_issue,
+CAST(iata_index AS NUMERIC) as iata_index,
+CAST(skytra_index AS NUMERIC) as skytra_index,
+CAST(iata_rpk AS NUMERIC) as iata_rpk,
+CAST(skytra_rpk AS NUMERIC) as skytra_rpk,
+iata_tickets,
+skytra_tickets,
+CAST(skytra_coverage AS NUMERIC) as skytra_coverage
+from index.X7_dt_of_issue"
+
+
+# TO DO !!!!
+bq cp index.X7_new index.X7
+
+
+
+
+
+
+# ONE OFF DEV SETUP
 #=================================================================
-tb="X7"
-tbd=$tb
-bq cp $ds.$tb $dsTest.$tbd
-
-tb="X7_IATA_index_2013_2020"
-tbd="X7_IATA_2013_2020"
-bq cp $ds.$tb $dsTest.$tbd
-
-tb="X7_dt_of_issue"
-tbd="X7_IATA_dt_of_issue"
-bq cp $ds.$tb $dsTest.$tbd
-
-tb="X7_composite_adjusted"
-tbd="X7_composite_adjusted_v4_4"
-bq cp $ds.$tb $dsTest.$tbd
-
-
-t1=airflow_params_X7
-t2=X7
-t3=X7_IATA_dt_of_issue
-t4=X7_IATA_2013_2020
-t5=X7_composite_adjusted_v4_4
-
-
-bq cp index.$t1 scratch_PaD_EU.in1135_$t1
-bq cp index.$t2 scratch_PaD_EU.in1135_$t2
-bq cp index.$t3 scratch_PaD_EU.in1135_$t3
-bq cp index.$t4 scratch_PaD_EU.in1135_$t4
-bq cp index.$t5 scratch_PaD_EU.in1135_$t5
-
-x6=X6
-bq cp d-dat-digitalaircrafttransport:matching.$x6 matching.$x6
-
+#=================================================================
 
 # GENERIC TABLES
 
