@@ -1,0 +1,30 @@
+region_pair, rcAll , rcExclusions , priceAll , priceExclusions 
+," 107,195,672 "," 221,299 "," 44,125,477,448 "," 106,019,340 "
+Africa-Africa," 712,116 ", -   ," 243,625,946 ", -   
+Africa-Asia/Pacific," 464,944 ", -   ," 617,147,124 ", -   
+Africa-CIS," 49,852 ", -   ," 44,136,909 ", -   
+Africa-Europe," 1,311,487 ", -   ," 1,176,046,862 ", -   
+Africa-Latin America," 14,020 ", -   ," 23,573,871 ", -   
+Africa-Middle East," 1,022,294 ", -   ," 568,748,833 ", -   
+Africa-North America," 254,418 ", -   ," 442,126,650 ", -   
+Asia/Pacific-Asia/Pacific," 46,752,720 ", -   ," 9,385,688,687 ", -   
+Asia/Pacific-CIS," 480,057 ", -   ," 358,139,567 ", -   
+Asia/Pacific-Europe," 3,560,359 ", -   ," 4,683,783,299 ", -   
+Asia/Pacific-Latin America," 140,512 ", -   ," 302,245,419 ", -   
+Asia/Pacific-Middle East," 2,741,649 ", -   ," 1,653,938,045 ", -   
+Asia/Pacific-North America," 2,578,333 "," 1,505 "," 3,833,095,732 "," 2,228,239 "
+CIS-CIS," 2,355,897 ", -   ," 453,950,741 ", -   
+CIS-Europe," 1,187,705 ", -   ," 428,749,267 ", -   
+CIS-Latin America," 18,230 ", -   ," 26,795,151 ", -   
+CIS-Middle East," 287,147 ", -   ," 113,207,349 ", -   
+CIS-North America," 112,111 ", -   ," 139,810,015 ", -   
+Europe-Europe," 10,708,093 ", -   ," 2,506,557,916 ", -   
+Europe-Latin America," 1,189,961 ", -   ," 1,408,360,215 ", -   
+Europe-Middle East," 1,278,178 ", -   ," 910,184,765 ", -   
+Europe-North America," 2,634,389 ", 967 ," 3,077,416,344 "," 1,428,400 "
+Latin America-Latin America," 3,066,528 ", -   ," 1,083,808,922 ", -   
+Latin America-Middle East," 22,547 ", -   ," 42,749,886 ", -   
+Latin America-North America," 3,860,002 ", -   ," 2,435,008,479 ", -   
+Middle East-Middle East," 2,043,943 ", -   ," 625,041,748 ", -   
+Middle East-North America," 230,953 ", -   ," 400,854,431 ", -   
+North America-North America," 18,117,227 "," 218,827 "," 7,140,685,276 "," 102,362,700 "

@@ -1,0 +1,122 @@
+Skytra_Customised_Index_and_Volume_x6
+-
+Region_Pair STRING FK - X7.first_flight_date 
+ASASED__full_history_Daily NUMERIC
+ASASEP__full_history_28DMA NUMERIC
+ASASDV__full_history_RPK_Daily NUMERIC
+ASASPV__full_history_RPK_28DMA NUMERIC
+
+Skytra_Customised_Future_Period 
+-
+filter_Region_Pair STRING FK - X7.first_flight_date 
+filter_country_Pair STRING
+filter_Airline STRING
+filter_Travel_Period STRING
+filter_FUTURE_CALENDAR_DATE STRING
+_
+Index_Date DATE
+Yield_Matched_Running_Average_USD NUMERIC
+Volume_Sold_(RPK) NUMERIC
+
+
+Skytra_Customised_Future_Settlement_x60
+-
+product__FUTURE_SETTLEMENT_PERIOD
+range__Month+2_to_Month+14
+_
+filter_Region_Pair STRING UNIQUE FK - X7.first_flight_date 
+filter_Period STRING UNIQUE
+__
+Index_Date DATE UNIQUE
+ASASExM__Yield_Matched_Running_Average_USD NUMERIC
+ASASExV__Volume_Sold_(RPK) NUMERIC
+ASASExMC__Yield_Running_Average_YoY_Pct_Change NUMERIC
+ASASExVC__Volume_Sold_(RPK)_YoY_Pct_Change NUMERIC
+
+Skytra_Bespoke_Index_Data
+-
+as_per_ind_cust_req STRING FK - X7.first_flight_date 
+
+X6
+-
+pl_id INT64 
+ticket_id STRING 
+#FK - I2.ticket_id
+region_pair STRING UNIQUE
+dt_of_issue DATE UNIQUE 
+nb_legs INT64 
+leadtime INT64 
+first_flight_date_utc DATE UNIQUE
+journey_map STRING 
+classless_journey_map STRING 
+sumP FLOAT64 
+od_mile FLOAT64 
+leg_prices STRING 
+leg_miles STRING 
+mkt_carrier_code_list STRING 
+operating_carrier_list STRING 
+mkt_carrier STRING 
+op_carrier STRING 
+n_pkg INT64 
+price FLOAT64 
+#FK - X5b.price
+key_type STRING 
+distribution_channel STRING 
+source_code STRING 
+ticket_document_amount FLOAT64 
+FILE_SOURCE STRING 
+skytra_search FLOAT64 
+
+
+X7
+-
+pl_id INT64 
+region_pair PK STRING FK -< X6.region_pair
+first_flight_date PK DATE FK -< X6.first_flight_date_utc
+iata_index FLOAT64 
+skytra_index FLOAT64 
+iata_rpk FLOAT64 
+skytra_rpk FLOAT64 
+iata_tickets INT64 
+skytra_tickets INT64 
+skytra_coverage FLOAT64 
+metric_code STRING 
+metric_value NUMERIC 
+
+X7_IATA_2013_2020
+-
+pl_id INT64 
+region_pair PK STRING FK - X6.region_pair
+first_flight_date PK DATE FK - X6.first_flight_date_utc
+IATA_RRPK_USD FLOAT64 
+IATA_TOT_RPK FLOAT64 
+iata_tickets INT64 
+metric_code STRING 
+metric_value NUMERIC 
+
+X7_IATA_dt_of_issue
+-
+pl_id INT64 
+region_pair PK STRING FK - X6.region_pair
+dt_of_issue PK DATE FK - X6.dt_of_issue 
+iata_index FLOAT64 
+skytra_index FLOAT64 
+iata_rpk FLOAT64 
+skytra_rpk FLOAT64 
+iata_tickets INT64 
+skytra_tickets INT64 
+skytra_coverage FLOAT64 
+metric_code STRING 
+metric_value NUMERIC 
+
+X7_RL_4_4
+-
+pl_id INT64 
+date PK DATE FK - X6.first_flight_date_utc
+region_pair PK STRING FK - X6.region_pair
+skytra_index FLOAT64 
+skytra_benchmark FLOAT64 
+skytra_issued_index FLOAT64 
+skytra_issued_benchmark FLOAT64 
+metric_code STRING 
+metric_value NUMERIC 

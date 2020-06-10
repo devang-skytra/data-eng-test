@@ -88,7 +88,7 @@ select 'in113B_X7_RL_4_4_RECON' as tbl, * from scratch_PaD_EU.in113B_X7_RL_4_4_R
 X7.sql -> index.X7
 X7_IATA.sql -> index.X7_IATA (was X7_IATA_index_2013_2020)
 X7_IATA_dt_of_issue.sql -> index.X7_IATA_DOI_no_spot (NEW table, does not exist)
-X7_dtissue_no_spot_window.sql (in DEV branch) -> index.X7_DOI_no_spot
+X7_DOI_no_spot_window.sql (in DEV branch) -> index.X7_DOI_no_spot
 X7_researchlicense_4_4_0.sql -> index.X7_RL_4_4
 ====================================================================================================
 

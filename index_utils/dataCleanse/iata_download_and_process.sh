@@ -89,6 +89,23 @@ WRONG - cloud console has limits so need to unzip in VM and transfer both zip an
 
 
 
+#replicate to RnD etc
+#-----------
+/*
+--insert into iata.int_X1_file_analysis 
+select * 
+EXCEPT(file_source, DOC_AMOUNT_TYPE_INDICATOR)
+, DOC_AMOUNT_TYPE_INDICATOR
+, file_source as FILE_SOURCE
+from d-dat-digitalaircrafttransport.iata.int_X1_file_analysis
+where file_source = 'FinalOutput_2020-05-25_w_2020-05-31_Global.csv'
+*/
+
+
+
+
+
+
 
 
 #putty
@@ -96,34 +113,31 @@ WRONG - cloud console has limits so need to unzip in VM and transfer both zip an
 cd /home/svc_iinet 
 ls -lh
 
-filePrefix="FinalOutput_2020-05-04_w_2020-05-10_Global"
+filePrefix="FinalOutput_2020-06-01_w_2020-06-07_Global"
 sudo gunzip -k $filePrefix.csv.gz
 
-#sudo 
+# use sudo at start of cmd if necessary 
 gsutil -m cp $filePrefix.csv gs://ext-iata-excl-data/2020/unzipped
 
-#sudo 
+# use sudo at start of cmd if necessary 
 gsutil -m cp $filePrefix.csv_sum.csv gs://ext-iata-excl-stat
 
 
 #cloud shell - quickly check schema ends with DOC_AMOUNT_TYPE_INDICATOR and DOI range looks ok
 #-----------
-fileFull="FinalOutput_2020-05-04_w_2020-05-10_Global.csv"
+fileFull="FinalOutput_2020-06-01_w_2020-06-07_Global.csv"
 gcsPath="gs://ext-iata-excl-data/2020/unzipped/"
-#gsutil cat -r 0-2000 $gcsPath$fileFull
+gsutil cat -r 0-2000 $gcsPath$fileFull
 
 
 
 #bq gui
 #-----------
 
-select * 
-from stat.iata_stats
-where _FILE_NAME like '%FinalOutput_2020-05-04_w_2020-05-10_Global.csv_sum.csv'
+select * from stat.iata_stats where _FILE_NAME like '%FinalOutput_2020-06-01_w_2020-06-07_Global.csv_sum.csv'
 
 
-DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-05-04_w_2020-05-10_Global.csv';
-#DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-03-22_w_2020-03-29_missing_tkts_2_Global.csv';
+DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-06-01_w_2020-06-07_Global.csv';
 
 insert into 
 iata.int_X1_file_analysis 
@@ -138,6 +152,7 @@ where _FILE_NAME like CONCAT('%',fileFull);
 #cloud shell - move file
 #-----------
 echo $gcsPath
+gcsPath="gs://ext-iata-excl-data/2020/unzipped/"
 gcsDest="gs://ext-iata-excl-data/2020/loaded_to_bq"
 gsutil mv -r $gcsPath* $gcsDest
 
@@ -145,9 +160,9 @@ gsutil mv -r $gcsPath* $gcsDest
 #bq gui
 #-----------
 
-DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-05-04_w_2020-05-10_Global.csv';
-DECLARE dS DATE DEFAULT '2020-05-04';
-DECLARE dE DATE DEFAULT '2020-05-10';
+DECLARE fileFull STRING DEFAULT 'FinalOutput_2020-06-01_w_2020-06-07_Global.csv';
+DECLARE dS DATE DEFAULT '2020-05-25';
+DECLARE dE DATE DEFAULT '2020-05-31';
 
 CALL iata_sp.sp_process_X3(dS, dE, fileFull, 'gs://ext-iata-excl-data/2020/unzipped/');
 --select min(dt_of_issue), max(dt_of_issue) from iata.X3 where FILE_SOURCE like CONCAT('%',fileFull) and dt_of_issue > '2000-01-01'
@@ -159,12 +174,34 @@ CALL iata_sp.sp_process_I3(dS, dE, fileFull);
 
 
 #select dt_of_issue, pl_id, count(*) from matching.X6 where dt_of_issue >= '2020-03-30' group by 1,2 order by 1,2
-DECLARE dS DATE DEFAULT '2020-04-26';
-DECLARE dE DATE DEFAULT '2020-05-06';
-CALL matching_sp.sp_process_X6(dS, dE);
+#CALL matching_sp.sp_process_X6(dS, dE);
+CALL matching_sp.sp_process_X6(fileFull,35);
+
+OR
+
+bq query --location=EU --batch --use_legacy_sql=false "CALL matching_sp.sp_process_X6('FinalOutput_2020-06-01_w_2020-06-07_Global.csv',35);"
 
 
 
+--------------------
+FUTURE API CODE
+
+DECLARE fileFull STRING DEFAULT '20200510_20200510185228.csv.gz';
+
+insert into 
+iata.X1_api_v1_5 
+select * 
+EXCEPT(DOC_AMOUNT_TYPE_INDICATOR)
+, _FILE_NAME as FILE_SOURCE 
+, DOC_AMOUNT_TYPE_INDICATOR
+from iata.ext_data_gz
+where _FILE_NAME like CONCAT('%',fileFull);
+
+
+--------------------
+DEBUGGING FTP
+
+grep -Rinw /var/log/auth.log.1 -e 'Jun  7 21' > ~/20200607_auth_log_check.txt
 
 
 

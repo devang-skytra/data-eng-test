@@ -97,7 +97,7 @@ skytra_coverage FLOAT64
 metric_code STRING 
 metric_value NUMERIC 
 
-X7_composite_adjusted_v4_4
+X7_RL_4_4
 -
 pl_id INT64 
 first_flight_date PK DATE 

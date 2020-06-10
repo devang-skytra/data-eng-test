@@ -1,0 +1,101 @@
+
+IN-668
+
+
+1) Produce X6 from the pipeline as usual
+
+2) 670 Produce X6_Divisor
+
+3) Indices get produced in X7 that now accounts for the divisors
+
+4) when new data events occur, the “modified X6” sql and the “divisor table” gets updated
+
+
+  
+PaD 
+- kiwi_AirlineExclTest.X6_AE  - 4,954,810 rows - North America-North America - 2019-12-21 to 2019-12-31
+- price_ae likely only changed field
+
+given X5b is recent only, will pretend AA case 
+
+occured  01-Jan-2020 (+1 day for 'Europe-North America' to provide proof of solution flexibility)
+detected 02-Jan-2020 (+1 day for 'Europe-North America' to provide proof of solution flexibility)
+resolved 24-Jan-2020
+reintro  14-Apr-2020
+
+
+/*
+SETUP 
+
+
+create or replace table generic.divisor_all as ( select 'airline' as divisor_type, 'AA' as iata_code, 'North America-North America' as region_pair, NUMERIC'0.924214' as divisor, DATE'2020-01-01' as start_date, DATE'2099-12-31' as end_date )
+insert into generic.divisor_all select divisor_type, iata_code, 'Asia/Pacific-North America' as region_pair, NUMERIC'0.5' as divisor, start_date, end_date from generic.divisor_all
+insert into generic.divisor_all select divisor_type, iata_code, 'Europe-North America' as region_pair, NUMERIC'2.0' as divisor, DATE'2020-01-02' as start_date, end_date from generic.divisor_all where region_pair = 'Asia/Pacific-North America'
+UPDATE generic.divisor_all SET end_date = NULL WHERE 1=1
+*/
+
+
+
+create view matching_v.v_X6_divisor_airline_subset as
+# could UNION ALL each divisor_type but instead split out views by divisor_type
+select
+x6.*, x6.price/d.divisor as price_adj
+from 
+`d-dat-digitalaircrafttransport.matching.X6` x6 
+inner join generic.divisor_all d on 
+  x6.op_carrier = d.iata_code and 
+  x6. region_pair = d.region_pair and 
+  x6.dt_of_issue between d.start_date and COALESCE(d.end_date, DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY) )
+where divisor_type = 'airline';
+
+create view matching_v.v_X6_divisor_airport_subset as
+# could UNION each divisor_type but instead split out views by divisor_type
+select
+x6.*, x6.price/d.divisor as price_adj
+from 
+`d-dat-digitalaircrafttransport.matching.X6` x6 
+inner join generic.divisor_all d on 
+  x6.op_carrier = d.iata_code and 
+  x6. region_pair = d.region_pair and 
+  x6.dt_of_issue between d.start_date and COALESCE(d.end_date, DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY) )
+where divisor_type = 'airport';
+
+create view matching_v.v_X6_divisor_ALL_subset as
+select
+x6.* EXCEPT(price), x6.price/d.divisor as price
+from 
+`d-dat-digitalaircrafttransport.matching.X6` x6 
+inner join generic.divisor_all d on 
+  x6.op_carrier = d.iata_code and 
+  x6.region_pair = d.region_pair and 
+  x6.dt_of_issue between d.start_date and COALESCE(d.end_date, DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY) )
+where divisor_type = 'airline'
+
+UNION DISTINCT
+
+select
+x6.* EXCEPT(price), x6.price/d.divisor as price
+from 
+`d-dat-digitalaircrafttransport.matching.X6` x6 
+inner join generic.divisor_all d on 
+  x6.op_carrier = d.iata_code and 
+  x6. region_pair = d.region_pair and 
+  x6.dt_of_issue between d.start_date and COALESCE(d.end_date, DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY) )
+where divisor_type = 'airport'
+
+
+
+24 Jan-2018
+•Compute the benchmark for the day before with AA & Without AA
+•Calculate divisor> 0.924214
+•Eliminate all AA in X6 and compute index
+•Divide value by divisor
+
+12 Jan-2019
+•Acknowledge that we now have AA
+•Start producing index with AA (wait 90 days)
+
+14 Apr 2019
+•Compute benchmark for day before with AA and without AA (+ divisor)
+•Update divisor > 0.996935
+•Produce index WITH AA and divide by new divisor0.152278
