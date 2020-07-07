@@ -46,16 +46,27 @@ start_human=`date -d @$start +'%y%m%d_%H%M'`
 baseDAG_suf=$baseDAG'_'$start_human
 gitDAG=$gitDAG_p$baseDAG
 sufDAG=$opsDAG_p$baseDAG_suf
-export sufDAG_py=$sufDAG.py
+
+if [ $3 = "DEV" ]
+then
+    export sufDAG_py=$sufDAG.py
+else
+    export sufDAG_py=$opsDAG_p$baseDAG.py
+fi
 
 # copy base dag - suffix with _ts
 cp $gitDAG.py $sufDAG_py
 
 # sed dag_id NB: sed debug input:  sed "s/ones/one's/"<<<"ones thing"
-sed -i  -e 's/'$baseDAG'/'$baseDAG_suf'/g' \
-        -e 's/DEBUG_MODE = False/DEBUG_MODE = '$4'/g' \
-        -e "s/None/'@once'/g"  \
-    $sufDAG_py
+# we introduced smart sched handling in DAGs for DEBUG_MODE so 
+# commented out 3rd line -e "s/None/'@once'/g"  \
+if [ $3 = "DEV" ]
+then
+    sed -i  -e 's/'$baseDAG'/'$baseDAG_suf'/g' \
+            -e 's/DEBUG_MODE = False/DEBUG_MODE = '$4'/g' \
+        $sufDAG_py
+fi
+
 
 # deploy
 if [ $5 = "True" ]
@@ -65,7 +76,7 @@ then
     #gsutil cp ~/ops/af/dags/*_nonEU.py gs://europe-west2-benchmark-devt-6ca0db0f-bucket/dags
 fi
 
-echo $baseDAG_suf
+echo $sufDAG_py
 # -> should receive notf in SLACK
 # -> also can use AF Tasks url bookmark to check status
 

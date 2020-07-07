@@ -19,7 +19,7 @@ default_args = {
 # days_ago(1) [above] and catchup = True [below] are helpful for allowing test scripts to dynamically change '@once' to '@once' to allow a once-only test run labelled with appropiate days_ago(1) run date
 with DAG('watchBug_BigQueryCheck_EU_vs_nonEU', schedule_interval = None, catchup = True, default_args = default_args) as dag:
 
-    ds = 'scratch_PaD_EU.'
+    ds = 'index.'
     bqCheckParamsX7_EU = BigQueryCheckOperator(
         task_id = 'Check-ParamsX7EU',
         sql = f'select X6_gt_X7, X6_fresh from {ds}airflow_params_X7', # {ds}
