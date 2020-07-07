@@ -1,3 +1,22 @@
+
+SELECT 
+CONCAT( 'bq cp ', table_schema, '.', table_name, ' scratch_PaD_PreDeployBak_Expire14d.', table_name, '_20200629') as bq_bak 
+FROM 
+products_IN1139.
+INFORMATION_SCHEMA.TABLES
+--where table_name like 'P00%'
+order by 1
+
+
+SELECT 
+CONCAT( 'cat ', table_name, '.sql | bq query --destination_table ', table_schema, '.', table_name, ' --replace --use_legacy_sql=false ') as bq_qry
+FROM 
+products_IN1139.
+INFORMATION_SCHEMA.TABLES
+--where table_name like 'P00%'
+order by 1
+
+
 -bq ls --format=json | jq -r '.[] | select(.location == "EU") | .id' | sed 's/:/./' | sed 's/\(.*\)/SELECT * FROM `\1.__TABLES__` UNION ALL/'
 
 WITH allDsTables as (

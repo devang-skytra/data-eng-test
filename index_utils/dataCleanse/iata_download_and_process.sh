@@ -186,16 +186,16 @@ bq query --location=EU --batch --use_legacy_sql=false "CALL matching_sp.sp_proce
 --------------------
 FUTURE API CODE
 
-DECLARE fileFull STRING DEFAULT '20200510_20200510185228.csv.gz';
+DECLARE fileFull STRING DEFAULT 'lllllllllllllllllllllllllllllllllll/20200510_20200510185228.csv.gz';
+select CAST( SUBSTR(fileFull, LENGTH(fileFull) -30, 8) AS INT64) as file_date_int
+
 
 insert into 
-iata.X1_api_v1_5 
-select * 
-EXCEPT(DOC_AMOUNT_TYPE_INDICATOR)
-, _FILE_NAME as FILE_SOURCE 
-, DOC_AMOUNT_TYPE_INDICATOR
+iata.X1
+
+select *, CAST( SUBSTR(_FILE_NAME, LENGTH(_FILE_NAME) -29, 8) AS INT64) as file_date_int
 from iata.ext_data_gz
-where _FILE_NAME like CONCAT('%',fileFull);
+where _FILE_NAME like CONCAT('%',fileFull)
 
 
 --------------------

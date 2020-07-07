@@ -113,14 +113,8 @@ revenue_ytd NUMERIC
 rpk_ytd NUMERIC 
 net_revenue_ytd NUMERIC 
 net_rpk_ytd NUMERIC 
-# Rather than rebuild P003 history every day
-#  we can calc YTD and join to P0003_hist (append prior year to hist, once prior year is static)
-#
-#  create or replace view vw_P0003 as --reporting layer
-#  select P3.*,
-#  ( SUM() OVER (PARTITION BY P0003_skey, EXTRACT(YEAR FROM dt_of_issue)  ORDER BY dt_of_issue ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) ) / P3h.net_revenue_ytd AS net_rpk_YoY
-#  from P0003 p3 inner join P0003_hist p3h on p3.P0003_skey = p3h.P0003_skey 
-#   and p3.dt_of_issue = DATE_SUB(p3h.dt_of_issue INTERVAL 1 YEAR)
+# Rather than rebuild P003 full history every day  AND rather than store YoY
+#  in view vw_P0003 we can calc YTD and join to P0003_hist (append prior year to hist, once prior year is static)
 #yoy_yield NUMERIC 
 #yoy_revenue_7day NUMERIC 
 #yoy_rpk_7day NUMERIC 

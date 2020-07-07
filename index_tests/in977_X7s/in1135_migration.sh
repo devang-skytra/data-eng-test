@@ -32,6 +32,33 @@ Otherwise, gets very confusing come deployment time otherwise and not compatible
 8 Desmo - confirm that as long as field names match during insert, field order does not matter
 
 
+# Backup
+#=================================================================
+
+ds=index
+dszzz=zzz_PreDeployBak_Expire14d
+tb=X7
+tbd=$pfx'X7'
+bq cp $ds.$tb $dszzz.$tbd
+#bq rm -t -f $ds.$tb
+
+tb=X7_IATA_index_2013_2020
+tbd=$pfx'X7_IATA'
+bq cp $ds.$tb $dszzz.$tbd
+#bq rm -t -f $ds.$tb
+
+#NEW table, does not exist
+
+tb=X7_dt_of_issue
+tbd=$pfx'X7_DOI_no_spot'
+bq cp $ds.$tb $dszzz.$tbd
+#bq rm -t -f $ds.$tb
+
+tb=X7_composite_adjusted
+tbd=$pfx'X7_RL_4_4'
+bq cp $ds.$tb $dszzz.$tbd
+#bq rm -t -f $ds.$tb
+
 
 
 
@@ -50,7 +77,7 @@ X7_researchlicense_4_4_0.sql -> index.X7_RL_4_4
 
 #========APPEND
 
-bq query --location=EU --append_table --use_legacy_sql=false --destination_table index.X7_new"select
+bq query --location=EU --append_table --use_legacy_sql=false --destination_table index.X7_new "select
 pl_id,
 region_pair,
 first_flight_date,

@@ -3,8 +3,9 @@
 --bq show --schema --format=prettyjson kiwi_PROD.X4_ARRAY > ./kiwi.X4_ARRAY.json
 --bq mk --table --time_partitioning_field search_date --schema ./kiwi.X4_ARRAY.json kiwi_PROD.X4_ARRAY
 
---LEGACY 
-SELECT partition_id FROM [kiwi_PROD.X5a_2019$__PARTITIONS_SUMMARY__] 
+#LegacySQL
+SELECT partition_id FROM [kiwi.X5b$__PARTITIONS_SUMMARY__] 
+--min 20200412 as at 20200617 ie same day that I reduced expiry to 50d
 
 
 -- -f skips confirmation bq rm -f -t 

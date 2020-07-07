@@ -153,6 +153,7 @@ X7_researchlicense_4_4_0.sql -> index.X7_RL_4_4
 pfx=aaa_pre_NUM_migrate_
 
 ds=index
+dszzz=zzz_PreDeployBak_Expire14d
 tb=X7
 tbd=$pfx'X7'
 #bq cp $ds.$tb $ds.$tbd
