@@ -23,3 +23,12 @@ bq cp -a -n 'd-dat-digitalaircrafttransport:kiwi.X5b$20200701' kiwi.X5b
 
 
 # gsutil -m cp -r gs://out-product-dev/* gs://trillo-fm-skytra-benchmark-dev/groups/
+
+
+bq cp 'd-dat-digitalaircrafttransport.index.X7' index.X7
+
+
+gsutil -m cp -r gs://trillo-fm-skytra-benchmark-dev/groups/ASAS_SIDF/* gs://trillo-fm-skytra-benchmark-uat/groups/ASAS_SIDF/
+
+gsutil -m cp -r gs://trillo-fm-skytra-benchmark-dev/groups/ASAS_SISVDF/* gs://trillo-fm-skytra-benchmark-uat/groups/ASAS_SISVDF/
+
