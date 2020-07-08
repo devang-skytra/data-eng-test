@@ -1,3 +1,6 @@
+
+cd C:\gcpsdk\google-cloud-sdk\bin>
+
 C:\gcpsdk>.\google-cloud-sdk\install.bat
 
 

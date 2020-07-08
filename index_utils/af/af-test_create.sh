@@ -1,4 +1,4 @@
-export COMPOSER_NAME="af-uat"
+export COMPOSER_NAME="benchmark-devtest-composer-3"
 export COMPOSER_LOCATION="europe-west2"
 #echo "COMPOSER_NAME is ${COMPOSER_NAME}"
 export bktDags="gs://europe-west2-af-test-8091433b-bucket/dags"
