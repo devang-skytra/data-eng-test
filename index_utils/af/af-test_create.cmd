@@ -1,3 +1,10 @@
+
+
+REM How to call airflow test from gcloud
+REM https://cloud.google.com/sdk/gcloud/reference/beta/composer/environments/run
+
+
+
 SET COMPOSER_NAME = "benchmark-devtest-composer-3"
 SET COMPOSER_LOCATION = "europe-west2"
 echo COMPOSER_NAME is %COMPOSER_NAME%
