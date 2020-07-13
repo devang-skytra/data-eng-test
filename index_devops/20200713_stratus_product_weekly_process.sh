@@ -7,6 +7,7 @@
 # check  iata.int_X1_file_analysis  AND  matching.X6  updated in PROD and not RnD
 
 # with RnD project active
+#	gcloud config set core/project skytra-benchmark-rnd
 
 # 1
 bq query --destination_table iata.int_X1_file_analysis \
@@ -47,6 +48,7 @@ CALL `skytra-benchmark-rnd.iata_sp.sp_process_X3`(dS, dE, fileFull);
 cd indexproduction
 git pull
 git checkout feature/IN-1092-create-a-waterfall-pricing-mecha
+git pull
 #cd bq/sq/Iata-revenue-pipeline/
 
 bq query --destination_table iata.R1 \
@@ -121,12 +123,12 @@ ON i_l.flyFrom_leg = leg_origin.iata_code
 LEFT JOIN generic.skytra_airports leg_dest
 ON i_l.flyTo_leg = leg_dest.iata_code
 "
-# R1 20,681,978
+# R1 20,681,978		21,640,921
+
 
 # 4 R2 CASE STATEMENT gets broken by Bash so have to run manually
 #bq query --destination_table iata.R2 --append_table --use_legacy_sql=false --allow_large_results 
 "
-
 WITH
 r1 AS (
   -- Read r1 make o-d pair symetrical so that o, d is the same for return flight
@@ -283,7 +285,8 @@ GROUP BY ticket_id, FILE_SOURCE -- We account for IATA sending the same ticket m
 
 "
 
-# R2 13,206,349
+# R2 13,206,349			13,658,649	
+
 
 # 5 R3 
 bq query --destination_table matching.R3 \
@@ -333,7 +336,7 @@ FROM r2
 LEFT JOIN x6
 ON  r2.ticket_id = x6.ticket_id
 "
-# R3 8,978,050
+# R3 8,978,050		9,485,115
 
 # 6 R4*
 
@@ -351,14 +354,14 @@ GROUP BY 1,3,4,5,6,7
 ORDER BY start_time desc
 LIMIT 20
 
-R4_index19 987
-R4_index18 224,409
-R4_index17 14,786,435
-R4_index16 157,447,483
+R4_index19 987				994
+R4_index18 224,409			225,271
+R4_index17 14,786,435		14,818,664
+R4_index16 157,447,483		157,727,858
 ...
-R4_index11 1,008,034,374
+R4_index11 1,008,034,374	1,009,981,705
 ...
-R4_index03 287,643,519
+R4_index03 287,643,519		288,541,503
 """
 
 # 7 R5
