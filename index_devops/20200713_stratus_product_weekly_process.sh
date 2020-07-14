@@ -539,7 +539,8 @@ SELECT
   END AS waterfall_source
 FROM rrpk_options
 "
-# R5 FinalOutput_2020-07-06_w_2020-07-12_Global.csv 8978050 8978050 5323613 8978050
+# R5 FinalOutput_2020-06-29__2020-07-05_Global.csv 8978050 8978050 5323613 8978050
+# R5 FinalOutput_2020-07-06__2020-07-12_Global.csv 9485115 9485115 5733184 9485115
 """
 check number_of_rows = nb_of_tickets
 
@@ -610,7 +611,8 @@ FROM
   leg_revenue
 WHERE release = 1
 "
-# R6 5,497,706,461
+# R6 5,497,706,461		5,512,908,671
+
 
 # 9.1 R7_flights
 bq query --destination_table matching.R7_flights \
@@ -620,7 +622,7 @@ bq query --destination_table matching.R7_flights \
 WITH
   r6 AS (
   SELECT
-    dt_of_issue, region_pair ,
+    dt_of_issue, region_pair ,country_pair,  
     FORMAT_DATE('%Y',first_flight_date_utc) AS year_delivery,
     FORMAT_DATE('%m',first_flight_date_utc) AS month,
     FORMAT_DATE('%Y-%m',first_flight_date_utc) AS month_delivery,
@@ -662,7 +664,7 @@ WITH
       'R')),
   r6_cat AS (
   SELECT
-    dt_of_issue, region_pair ,
+    dt_of_issue, region_pair ,country_pair,
     year_delivery,
     month_delivery,
     month,
@@ -716,12 +718,13 @@ WITH
     (transaction_code ='R',
       IFNULL(leg_revenue,
         0.),
-      0.) AS revenue_refund
+      0.) AS revenue_refund,
+      IF (transaction_code = 'I',1,0) as issued_leg, IF (transaction_code = 'E',1,0) as exchanged_leg,IF (transaction_code = 'R',1,0) as refunded_leg
   FROM
     r6 )
 SELECT
   0 AS pl_id,
-  dt_of_issue, region_pair ,
+  dt_of_issue, region_pair ,country_pair,
   year_delivery,
   month_delivery,
   quarter,
@@ -739,12 +742,15 @@ SELECT
   ROUND(SUM(revenue_issued),2) AS revenue,
   ROUND(SUM(rpk_issued),0) AS rpk,
   ROUND((SUM(revenue_issued)-SUM(revenue_refund)),2) AS net_revenue,
-  ROUND((SUM(rpk_issued)-SUM(rpk_refund)),0) AS net_rpk
+  ROUND((SUM(rpk_issued)-SUM(rpk_refund)),0) AS net_rpk,
+  ROUND(SUM(issued_leg),0) AS passengers,
+  ROUND((SUM(issued_leg)-SUM(refunded_leg)),2) AS net_passengers,
+  
 FROM
   r6_cat
 GROUP BY
   dt_of_issue,
-  year_delivery, region_pair ,
+  year_delivery, region_pair ,country_pair,
   quarter,
   month_delivery,
   month,
@@ -753,7 +759,8 @@ GROUP BY
   flyFrom_leg,
   flyTo_leg
 "
-# 9.1 R7_flights 429,531,527
+# 9.1 R7_flights 429,531,527		670,039,199
+
 
 # 9.2 R7_itineraries
 bq query --destination_table matching.R7_itineraries \
@@ -823,9 +830,11 @@ r6_cat AS (
     IF(transaction_code ='I',dist_km,0.) AS rpk_issued,
     IF(transaction_code ='R',dist_km,0.) AS rpk_refund,
     IF(transaction_code ='I',IFNULL(leg_revenue,0.),0.) AS revenue_issued,
-    IF(transaction_code ='R',IFNULL(leg_revenue,0.),0.) AS revenue_refund
+    IF(transaction_code ='R',IFNULL(leg_revenue,0.),0.) AS revenue_refund,IF (transaction_code = 'I',1,0) as issued_leg, IF (transaction_code = 'E',1,0) as exchanged_leg,IF (transaction_code = 'R',1,0) as refunded_leg
   FROM r6
 )
+
+
 SELECT
   0 AS pl_id,
   dt_of_issue, year_delivery, month_delivery,quarter, month,  CONCAT(year_delivery,'-',quarter)  as quarter_delivery, lead_bucket,
@@ -835,7 +844,11 @@ SELECT
   ROUND(SUM(revenue_issued),2) AS revenue,
   ROUND(SUM(rpk_issued),0) AS rpk,
   ROUND((SUM(revenue_issued)-SUM(revenue_refund)),2) AS net_revenue,
-  ROUND((SUM(rpk_issued)-SUM(rpk_refund)),0) AS net_rpk
+  ROUND((SUM(rpk_issued)-SUM(rpk_refund)),0) AS net_rpk,
+
+  ROUND(SUM(issued_leg),0) AS passengers,
+
+  ROUND((SUM(issued_leg)-SUM(refunded_leg)),2) AS net_passengers
 FROM r6_cat
 GROUP BY
   dt_of_issue,year_delivery,quarter,
@@ -844,7 +857,7 @@ GROUP BY
   od_pair,
   op_carrier
 "
-# R7_itineraries 377,463,817
+# R7_itineraries 377,463,817		378,406,911
 
 
 
