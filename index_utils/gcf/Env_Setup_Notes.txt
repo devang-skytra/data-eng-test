@@ -1,0 +1,86 @@
+https://cloud.google.com/functions/docs/concepts/iam
+https://cloud.google.com/functions/docs/reference/iam/roles
+https://cloud.google.com/functions/docs/securing/function-identity
+
+Activate Cloud Functions on DevTest
+
+	Give paul.desmond@skytraindices.com 
+		cloudfunctions.Developer
+		iam.serviceAccounts.actAs on the default/custom cloudfunctions service account used for Cloud Functions required for deployment ( see  https://cloud.google.com/functions/docs/securing/function-identity )
+		
+	Give rest of team cloudfunctions.Viewer (while they are trained on cloudfunctions)
+
+	
+Activate Cloud Functions on UAT
+
+	Give GCC service account for project cloudfunctions.serviceAgent for project
+	HOLD - MAY NOT BE NECESSARY (Give service account created for bigquery-reservations in project cloudfunctions.serviceAgent for project)
+
+	Give paul.desmond@skytraindices.com 
+		cloudfunctions.Viewer
+		iam.serviceAccounts.actAs on the default/custom cloudfunctions service account 
+			HOLD - MAY NOT BE NECESSARY (and service account created for bigquery-reservations)
+	
+Activate Cloud Functions on Production
+
+	Give GCC service account for project
+		cloudfunctions.Viewer
+		iam.serviceAccounts.actAs on the default/custom cloudfunctions service account and service account created for bigquery-reservations cloudfunctions.serviceAgent for project
+	HOLD - MAY NOT BE NECESSARY (Give service account created for bigquery-reservations in project cloudfunctions.serviceAgent for project)
+
+	Give paul.desmond@skytraindices.com 
+		cloudfunctions.Viewer
+		iam.serviceAccounts.actAs on the default/custom service account and service account created for bigquery-reservations
+
+
+Paul’s list of 
+
+	GCC sa requirements checklist (add to other permissions known to be required)
+		BigQuery User
+		Storage Object Creator
+		cloudfunctions.serviceAgent
+	
+	bigquery_reservations_ sa requirements checklist (add to other permissions known to be required)
+		bigquery.resourceAdmin on bqadmin project
+	
+	paul.desmond requirements checklist (add to other permissions known to be required)
+		bigquery.resourceAdmin on any non-Production projects using reservations so I can see what is happening 
+		bigquery.reservations.list on bqadmin and production projects
+		
+		
+		
+Airflow
+
+core
+	max_active_runs_per_dag	150
+	dag_concurrency	300
+	dagbag_import_timeout	120
+	default_timezone	Europe/London
+	parallelism	300		
+	
+UPDATE operation on this environment failed 2 minutes ago with the following error message:
+An error occurred before the new web server image has been created.	
+
+
+BigQuery
+
+	bigquery.transfers.get
+	bigquery.transfers.create (guess)
+
+	bigquery.jobs.create
+	bigquery.transfers.update
+
+	bigquery.datasets.update
+
+
+DATA ENG SIDE SETUP
+====================================
+GCC
+	variables
+	packages
+	config over-rides
+	* slack connection
+	* slack app
+
+
+

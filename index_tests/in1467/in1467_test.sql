@@ -99,6 +99,9 @@ echo gsutil -m cp -r %bktMD%/%d% %bktMDU%/%d%
 	bq mk --external_table_definition=./stat.kiwi_stats_defn.json --schema ./stat.kiwi_stats_schema.json stat.kiwi_stats
 	bq mk --external_table_definition=./kiwi.ext_data_defn.json kiwi.ext_data
 	
+	gsutil cp gs://ext-iata-excl-stat/stat/y=2020/m=07/*.csv gs://ext-iata-excl-dev-stat/stat/y=2020/m=07/
+	bq mk --external_table_definition=./stat.iata_stats_defn.json stat.iata_stats
+	
 	gsutil cp gs://ext-iata-excl-data/data/y=2020/m=07/20200701*.csv.gz gs://ext-iata-excl-uat-data/data/y=2020/m=07/
 	bq mk --external_table_definition=./iata.ext_data_gz_defn.json --schema ./iata.X1.json iata.ext_data_gz
 

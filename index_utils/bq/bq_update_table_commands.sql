@@ -1,5 +1,6 @@
 /* days to seconds
 1  - 86400
+4  - 345600
 5  - 432000 
 50 - 4320000
 
@@ -8,10 +9,12 @@ gcloud config set core/project d-dat-digitalaircrafttransport
 
 
 */
-bq update --time_partitioning_expiration 950400 kiwi.X4 
-bq update --time_partitioning_expiration 950400 kiwi.X5a 
+bq update --time_partitioning_expiration 345600 kiwi.X4 
+bq update --time_partitioning_expiration 345600 kiwi.X5a 
 bq update --time_partitioning_expiration 4320000 kiwi.X5b 
 
+bq update --project_id=skytra-benchmark-devandtest --time_partitioning_expiration 4320000 kiwi.X5b 
+bq update --project_id=d-dat-digitalaircrafttransport --time_partitioning_expiration 6912000 kiwi.X5b 
 
 bq update --set_label etl_service:airflow 
 

@@ -41,12 +41,13 @@ REM Manual unfort. https://stackoverflow.com/questions/6359820/how-to-set-comman
 REM  bq | SET _result=%_test:~0,5% substring failed
 REM We actually don't need to do 1st step above though, just incr. by 10 every 10 days and run, can also be rerun every day
 SET ds_tb=iata.X1
-SET dt=20200701
+SET dt=20200711
 SET src_prj=d-dat-digitalaircrafttransport
 SET dst_prj=skytra-benchmark-uat
 
+SET dt=20200711
 bq rm -t -f %dst_prj%:%ds_tb%$%dt%
-
 bq cp -a -n %src_prj%:%ds_tb%$%dt% %dst_prj%:%ds_tb%
 
 REM SELECT min( file_date_int ), max(file_date_int), count(distinct file_date_int) FROM `skytra-benchmark-uat.iata.X1` where file_date_int > 0
+
