@@ -1,5 +1,30 @@
 
 
+REM ******** DONT FORGET BASH DEVOPS OPTIONS  C:\git\DataEng\index_utils\bq\DataOps
+REM ****************************************************************************************
+
+
+gcloud config get-value core/project
+gcloud config set core/project skytra-benchmark-prod
+
+
+
+
+
+
+
+SET ds=iata
+REM when testing airflow, set dt to yesterday because by default that is what airflow processes
+SET dt=20200826
+SET src_prj=d-dat-digitalaircrafttransport
+SET dst_prj=skytra-benchmark-uat
+
+SET dt=20200711
+bq rm -t -f %dst_prj%:%ds_tb%$%dt%
+bq cp -a -n %src_prj%:%ds_tb%$%dt% %dst_prj%:%ds_tb%
+
+
+
 
 SET s=d-dat-digitalaircrafttransport
 SET d=skytra-benchmark-prod
@@ -12,6 +37,13 @@ bq cp -f %s%:iata.I2 %d%:iata.I2
 bq cp -f %s%:iata.I3 %d%:iata.I3
 
 bq cp -f %s%:matching.X6$20200727 %d%:matching.X6
+
+
+REM 	https://cloud.google.com/bigquery/docs/copying-datasets
+
+
+bq mk --transfer_config --project_id=skytra-benchmark-prod --data_source=cross_region_copy --target_dataset=airflow --display_name='tfr_ds_airflow_Migr_to_Prod' --params='{"source_dataset_id":"airflow","source_project_id":"d-dat-digitalaircrafttransport","overwrite_destination_table":"true"}'
+
 
 
 

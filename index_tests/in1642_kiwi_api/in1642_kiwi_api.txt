@@ -1,10 +1,10 @@
 
 
 
-kiwi_api_url_hist
+INSERT INTO skytra-benchmark-uat.log.kiwi_api_url_hist
 
 
-bq query --project_id=skytra-benchmark-uat --use_legacy_sql=false "select count(*) from log.kiwi_api_url_hist where api_date = '2020-08-20'"
+bq query --project_id=skytra-benchmark-uat --use_legacy_sql=false "select count(*) from log.kiwi_api_url_hist where api_date = '2020-08-21'"
 
 
 manually (from long list below) to secure some search_id's to check tomorrow
@@ -20,6 +20,34 @@ https://api.skypicker.com/flights?flyFrom=LXA&to=CTU&dateFrom=21/08/2020&dateTo=
 SELECT 
 sid, leg_origin, leg_dest, skytra_search FROM `d-dat-digitalaircrafttransport.kiwi.X4` 
 WHERE search_date = "2020-08-17" and sid in('11d381f8-e524-4203-a667-06e4f8c589b1','aab1a51c-572e-4695-9098-55b95854e986')
+
+
+
+SELECT
+count(*) as s,
+countIF( skytra_search <> 0.0) as ss
+--, count(IF( skytra_search = cast('0.0' as float64),0,1) ) as ss
+FROM `d-dat-digitalaircrafttransport.kiwi.X5b`
+WHERE search_date = "2020-08-19"
+
+select 4979089/1914166836
+= .26% skytra search > 0,
+
+
+--will be a delay before recent searches have tickets to match against so above query more meaningful
+
+SELECT
+dt_of_issue, FILE_SOURCE,
+count(*) as s,
+countIF( skytra_search <> 0.0) as ss,
+countIF( skytra_search = 1.0) / count(*) as pct
+--, count(IF( skytra_search = cast('0.0' as float64),0,1) ) as ss
+FROM matching.X6
+WHERE 
+dt_of_issue >= '2020-08-18'
+and FILE_SOURCE >= '%20200821' 
+group by 1, 2
+
 
 
 

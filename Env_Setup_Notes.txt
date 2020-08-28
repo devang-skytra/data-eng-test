@@ -73,6 +73,16 @@ BigQuery
 	bigquery.datasets.update
 
 
+Cong Slack from Paul_D  10:13 AM
+	especially in DevTest, I should have
+	roles/bigquery.dataEditor
+	roles/bigquery.jobUser
+	roles/bigquery.metadataViewer
+	bigquery.transfers.update
+	
+	bigquery.transfers.create
+	
+
 DATA ENG SIDE SETUP
 ====================================
 GCC
