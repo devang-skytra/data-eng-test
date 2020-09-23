@@ -304,10 +304,10 @@ wild="*"
 gsutil -m cp -R $bkt_src$pfx_src$wild $bkt_dst$pfx_dst
 
 #fxrates
-bkt_src="gs://fxrates"
-bkt_dst="gs://fxrates-dev"
+SET bkt_src=gs://fxrates
+SET bkt_dst=gs://fxrates-dev
 wild="/*"
-gsutil -m cp -R $bkt_src$wild $bkt_dst
+gsutil -m cp -R %bkt_src%%wild% %bkt_dst%
 
 #spot-windows
 bkt_src="gs://spot_windows"
@@ -315,7 +315,7 @@ bkt_dst="gs://spot-windows-dev"
 wild="/*"
 gsutil -m cp -R $bkt_src$wild $bkt_dst
 
-
+EUR
 
 #generic
 #git checkout feature/IN-917-build-source-code-for-all-old-non
