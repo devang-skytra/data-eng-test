@@ -41,29 +41,35 @@ $prj='skytra-benchmark-devandtest'
 
 
 
-gcloud auth activate-service-account cloud-functions@skytra-benchmark-uat.iam.gserviceaccount.com --key-file="C:\Users\PaulDesmond\OneDrive - SKYTRA LIMITED\Automation\gcp_keys\skytra-benchmark-uat-cloud-functions.json"
+gcloud auth activate-service-account cloud-functions@skytra-benchmark-prod.iam.gserviceaccount.com --key-file="C:\Users\PaulDesmond\OneDrive - SKYTRA LIMITED\Automation\gcp_keys\skytra-benchmark-prod-cloud-functions.json"
 
-gcloud auth login cloud-functions@skytra-benchmark-uat.iam.gserviceaccount.com
+gcloud auth login cloud-functions@skytra-benchmark-prod.iam.gserviceaccount.com
 
 #cd c:\git
 #$FX_NAME='py-sample-fx-sa'
 #$ENTRY_FX='hello_gcs'
 #$SRC_DIR='py-sample-fx-sa'
 
+
+$prj='skytra-benchmark-prod'
+gcloud config set core/project $prj
+
 cd c:\git\index2\gcf
-$FX_NAME='gcf_arc_api_v1_5_noPwd'
+
+$FX_NAME='gcf_arc_api_v1_5'
 $ENTRY_FX='main'
 $SRC_DIR='api_iata'
 
-$prj='skytra-benchmark-uat'
 $REGION='europe-west2'
-$STG_BUCKET='sys_stg_fx_deploy-uat'
-$TRG_BUCKET='d-dat-data-eng-uat'
+$STG_BUCKET='sys_stg_fx_deploy_prod'
+$TRG_BUCKET='ext-iata-trig-prod'
 
 gcloud functions deploy $FX_NAME --project=$prj --region=$REGION --allow-unauthenticated --entry-point=$ENTRY_FX --memory=1024MB --runtime=python37 --source=$SRC_DIR --stage-bucket=$STG_BUCKET --timeout=540 --trigger-bucket=$TRG_BUCKET
 
 
-index2_K3577tow
+# echo 'new data' | gsutil cp - gs://ext-iata-trig-prod/prod-20200924-data.txt
+
+
 
 
 
