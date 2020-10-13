@@ -104,7 +104,13 @@ cd c:\git\index2\bq\t
 gsutil mb -b on -c standard -l europe-west1 gs://bq-generic-prod
 $pfx='/prod_dims/generic.product_ba_label_dim.csv'
 gsutil cp gs://d-dat-data-eng$pfx gs://bq-generic-prod$pfx
-bq mk --external_table_definition=./generic.prod_ba_label_dim_ext_defn.json generic.prod_ba_label_dim_ext
+bq mk --external_table_definition=./generic.prod_ba_label_dim_ext_defn.json generic.product_ba_label_dim_ext
+
+
+
+$ds='generic'
+$tb='prod_ba_label_dim_ext'
+bq rm -t -f $dst_prj`:$ds.$tb
 
 
 cd c:\git\index2\af\dags
@@ -112,11 +118,15 @@ $bkt_dag='gs://europe-west2-benchmark-prod-8d6b30f8-bucket/dags'
 $sq='sq/BA_*.*'
 gsutil -m cp -r $sq $bkt_dag/sq
 
+$dag='dag_BA_Trillo*.*'
+gsutil cp $dag $bkt_dag
+
+cd c:\git\index2\af\dags
+git checkout hotfix/IN-1787-change-af-dag-matching-to-contin
 $py='py/op_gen.py'
 gsutil -m cp -r $py $bkt_dag/py
 	
-$dag='dag_BA_Trillo*.*'
-gsutil cp $dag $bkt_dag
+
 
 	
 	

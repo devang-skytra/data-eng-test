@@ -24,7 +24,7 @@ git pull
 cd c:\git\index2\bq\t\
 
 #foreach ($t in $tbls) { (Get-Content $t) -replace '--time_partitioning_expiration 950400 ','' | Invoke-Expression } 
-$tbls='kiwi.X5a','kiwi.X5b'
+$tbls='kiwi.X5a'
 foreach ($t in $tbls) { 
 	"bq rm --project_id=$prj -t -f $t" | Invoke-Expression
 	"bq mk --project_id=$prj --table --time_partitioning_field search_date --require_partition_filter --schema .`\$t.json $t" | Invoke-Expression
