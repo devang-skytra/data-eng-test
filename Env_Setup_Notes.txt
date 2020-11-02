@@ -65,22 +65,15 @@ An error occurred before the new web server image has been created.
 BigQuery
 
 	bigquery.transfers.get
-	bigquery.transfers.create (guess)
-
 	bigquery.jobs.create
 	bigquery.transfers.update
-
-	bigquery.datasets.update
-
-
-Cong Slack from Paul_D  10:13 AM
-	especially in DevTest, I should have
-	roles/bigquery.dataEditor
-	roles/bigquery.jobUser
-	roles/bigquery.metadataViewer
-	bigquery.transfers.update
 	
-	bigquery.transfers.create
+	bigquery.datasets.create
+	bigquery.datasets.update
+	bigquery.dataEditor
+	bigquery.jobUser
+	bigquery.metadataViewer
+
 	
 
 DATA ENG SIDE SETUP

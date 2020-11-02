@@ -2,9 +2,26 @@
 --Airflow Data Profiling
 
 --Ad Hoc Query
-SELECT * 
-FROM task_instance 
-WHERE dag_id like '%iwi%' and operator like 'BigQueryOperator%' and state = 'success' and start_date > DATE'2020-01-01'
+SELECT * FROM task_instance WHERE dag_id like 'dag_matching%' or dag_id like 'dag_Matching%' 
+--and operator like 'BigQueryOperator%' and state = 'success' and start_date > DATE'2020-01-01'
+
+-- download .csv, name, and upload into gs://logairflow-log-exports/*.csv
+
+select * from log.airflow_log_exports_ext where _FILE_NAME like '%dag_iata_daily%' LIMIT 50
+
+
+select _FILE_NAME as fle, count(*) from log.airflow_log_exports_ext where substr( replace(_FILE_NAME,'gs://airflow-log-exports/','') ,1,6) in('dag_ia','dag_ma','dag_ki') group by 1
+
+
+gs://airflow-log-exports/dag_kiwi_v5_2018_all.csv 				1837
+gs://airflow-log-exports/dag_matching_all.csv (act. v0 only)	 991
+gs://airflow-log-exports/dag_iata_daily_0_to_v2_2.csv			2127
+gs://airflow-log-exports/kiwi_2020_X2_airflow_export_ALL.csv	1843
+gs://airflow-log-exports/IATA_X_airflow_export_ALL.csv			  95
+
+
+
+
 
 /* then in bq import into log.af_lk2020_temp
 insert into log.airflow_load
@@ -36,10 +53,6 @@ dag_id, min( execution_date) as minExec, max( execution_date) as maxExec
 FROM `d-dat-digitalaircrafttransport.log.airflow_log_exports` 
 group by 1
 order by 1
-
-
-airflow_log_exports_ext
-airflow-log-exports/*.csv
 
 
 --insert into log.airflow_log_exports

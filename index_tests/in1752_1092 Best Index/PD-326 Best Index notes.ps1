@@ -1,6 +1,189 @@
 
 # Best Index 
 
+gcloud config get-value core/project
+
+# 2020 10 28
+# ****************************************************************************************
+# ****************************************************************************************
+
+
+# *****  DONE  External Table Deploy
+# *****************************************************
+	cd c:\git\index2\bq\t
+
+	bq mk --project_id=$prj --external_table_definition=./generic.ext_EURUSD_defn.json --schema ./generic.ext_EURUSD_schema.json generic.ext_EURUSD
+	bq mk --project_id=$prj --external_table_definition=./iata.ext_data_gz_defn.json --schema ./iata.X1.json iata.ext_data_gz
+	bq mk --project_id=$prj --external_table_definition=./iata.ext_data_defn.json --schema ./iata.X1.json iata.ext_data
+	bq mk --project_id=$prj --external_table_definition=./stat.iata_stats_defn.json stat.iata_stats
+	bq mk --project_id=$prj --external_table_definition=./stat.kiwi_stats_defn.json --schema ./stat.kiwi_stats_schema.json stat.kiwi_stats
+
+
+# *****  DONE  Generic Table Copy
+# *****************************************************
+	$prj='skytra-benchmark-uat'
+	gcloud config set core/project $prj
+
+
+	#  CONFIRMED  'iata.X1_Pre_Daily_Merged_v2' prepared in UAT and unchanged in RnD ??
+
+	$tbls='generic.golden_table_airports','generic.golden_table_operating_carriers','generic.golden_ticketing_carriers','generic.index_rrpk_model_params_201811_201911','generic.spot_window_regions_ext','generic.skytra_index_regions','generic.Ticketing_to_Operating_Carrier'
+	foreach ($t in $tbls) { 
+		$cmd = "bq cp -f skytra-benchmark-rnd:$t $t"
+		#echo $cmd
+		$cmd | Invoke-Expression
+	} 
+
+
+# ***** Fact Table Copy
+# *****************************************************
+
+# 1 [scratch_SaN.X5b$__PARTITIONS_SUMMARY__] 2018 274 from 20180401
+# 2 [kiwi.X5b$__PARTITIONS_SUMMARY__]                      20190101 to 20201027 +active
+# 3 [kiwi.X5b_v5$__PARTITIONS_SUMMARY__]     combo of above
+
+bq cp -f skytra-benchmark-rnd:kiwi.X5b_v5 skytra-benchmark-uat:kiwi.X5b
+
+
+$tbls ='iata.X3','iata.R1','iata.R2','iata.R3I3','matching.X6','matching.X7','index.X8','index.X9','index.X11','index.X12'
+foreach ($t in $tbls) { 
+	$cmd = "bq cp -f skytra-benchmark-rnd:$t $t"
+	#echo $cmd
+	$cmd | Invoke-Expression
+} 
+
+"""
+Waiting on bqjob_r5bf34288d0967c93_0000017589f2eb56_1 ... (135s) Current status: DONE
+Table 'skytra-benchmark-rnd:iata.X3' successfully copied to 'skytra-benchmark-uat:iata.X3'
+Waiting on bqjob_r487b758cd5e1e63e_0000017589f5086a_1 ... (164s) Current status: DONE
+Table 'skytra-benchmark-rnd:iata.R1' successfully copied to 'skytra-benchmark-uat:iata.R1'
+Waiting on bqjob_r675eeb0e7c30c56c_0000017589f79657_1 ... (164s) Current status: DONE
+Table 'skytra-benchmark-rnd:iata.R2' successfully copied to 'skytra-benchmark-uat:iata.R2'
+Waiting on bqjob_r38b38c94ec9d5cba_0000017589fa27ea_1 ... (135s) Current status: DONE
+Table 'skytra-benchmark-rnd:iata.R3I3' successfully copied to 'skytra-benchmark-uat:iata.R3I3'
+Waiting on bqjob_r9dee856f58fdde5_0000017589fc4600_1 ... (14s) Current status: DONE
+Table 'skytra-benchmark-rnd:matching.X6' successfully copied to 'skytra-benchmark-uat:matching.X6'
+Waiting on bqjob_r77d5915963493c9e_0000017589fc8d1c_1 ... (6s) Current status: DONE
+Table 'skytra-benchmark-rnd:matching.X7' successfully copied to 'skytra-benchmark-uat:matching.X7'
+Waiting on bqjob_rfc1af3fa0295da2_0000017589fcb4b2_1 ... (4s) Current status: DONE
+Table 'skytra-benchmark-rnd:index.X8' successfully copied to 'skytra-benchmark-uat:index.X8'
+Waiting on bqjob_r562dc31479886336_0000017589fcd1ff_1 ... (3s) Current status: DONE
+Table 'skytra-benchmark-rnd:index.X9' successfully copied to 'skytra-benchmark-uat:index.X9'
+Waiting on bqjob_r6185ccd82a5c9dd_0000017589fcebbe_1 ... (135s) Current status: DONE
+Table 'skytra-benchmark-rnd:index.X11' successfully copied to 'skytra-benchmark-uat:index.X11'
+Waiting on bqjob_r5855dbbb6ddcaa80_0000017589ff088b_1 ... (0s) Current status: DONE
+"""
+
+
+# *****  DONE  CLEAR LOG TABLES EXCEPT FOR KIWI V5 BUILD  
+#C:\Users\PaulDesmond\OneDrive - SKYTRA LIMITED\Shared\pd_IdxTeamShare\pd_DataTeamShare\v5\log cleanout.sql
+# *****************************************************
+
+
+
+# *****  DONE  Airflow gsutil deploy
+# *****************************************************
+
+	git checkout feature/IN-1092-create-a-waterfall-pricing-mecha
+	git pull
+
+	cd c:\git\index2\af\dags
+
+	#DevTest
+	#$inst='benchmark-devtest-composer-3'	
+	#$bkt_dag='gs://europe-west2-benchmark-devt-6ca0db0f-bucket/dags'
+
+	#UAT
+	$inst='benchmark-uat-composer2'		
+	$bkt_dag='gs://europe-west2-benchmark-uat--2bf16b72-bucket/dags'
+
+	#PROD	
+	# SET bkt_dag=gs://europe-west2-benchmark-prod-8d6b30f8-bucket/dags
+	# gsutil -m cp -r py %bkt_dag%/py
+
+
+	gsutil -m cp -r *v5_0_0.py $bkt_dag
+
+	$qrys='sq/X5a.sql','sq/X5b.sql','sq/X12.sql','py/op_gen.py'
+	$qrys='py/op_gen.py'
+	foreach ($q in $qrys) { 
+		$cmd = "gsutil -m cp -r $q $bkt_dag/$q"
+		#echo $cmd
+		$cmd | Invoke-Expression
+	} 
+
+ 
+# *****  DONE  PROCs deploy
+# *****************************************************
+
+
+	cd c:\git\index2\bq\r\sp
+
+	$qrys='iata_sp.sp_process_R1','iata_sp.sp_process_R2','iata_sp.sp_process_R3I3','iata_sp.sp_process_X3', 'index_sp.sp_process_X8','index_sp.sp_process_X9','index_sp.sp_process_X11','log_sp.sp_proc_load_start','matching_sp.sp_process_X6','matching_sp.sp_process_X7'
+	foreach ($q in $qrys) { 
+		#Get-Content $q | bq query --project_id=$prj --use_legacy_sql=false 
+		$cmd = "Get-Content $q.sql | bq query --project_id=$prj --use_legacy_sql=false"
+		#echo $cmd
+		$cmd | Invoke-Expression
+	} #Write-Output
+
+
+
+
+
+# ***** JSON Diff
+
+cd c:\git\index2\bq
+mkdir t_temp
+cd t_temp
+
+$prj='skytra-benchmark-rnd'
+gcloud config set core/project $prj
+
+
+$tbls ='iata.X3','iata.R1','iata.R2','iata.R3I3','matching.X6','matching.X7','index.X8','index.X9','index.X11','index.X12'
+foreach ($t in $tbls) { 
+	$cmd = "bq show --schema --format=prettyjson $t > $t.json"
+	echo $cmd
+	$cmd | Invoke-Expression
+} 
+
+
+# Screenshot results to "C:\Users\PaulDesmond\OneDrive - SKYTRA LIMITED\Shared\pd_IdxTeamShare\pd_DataTeamShare\v5"
+
+
+# ****************************************************************************************
+# ****************************************************************************************
+
+
+
+
+# 2020 10 22
+# ****************************************************************************************
+$prj='skytra-benchmark-rnd'
+gcloud config set core/project $prj
+
+cd c:\git\index2\bq\t\
+
+$tbls='matching_models_test_SANS_OD.X11','matching_models_test.X11'
+foreach ($t in $tbls) { 
+	"bq rm --project_id=$prj -t -f $t" | Invoke-Expression
+	"bq mk --project_id=$prj --table --time_partitioning_field first_flight_date_utc --require_partition_filter --clustering_fields=region_pair,ticket_id --schema .`\matching.X11.json $t" | Invoke-Expression
+} 
+
+bq query --project_id=$prj --append_table --use_legacy_sql=false --allow_large_results "CALL index_sp.sp_process_X11_SANS_OD( ['2018-11-01'], ['ASAS'], 'matching_models_test_SANS_OD', 'matching', 'matching_models_test_SANS_OD', 'matching', FALSE );" 
+
+bq query --project_id=$prj --append_table --use_legacy_sql=false --allow_large_results "CALL index_sp.sp_process_X11( ['2018-11-01'], ['ASAS'], 'matching_models_test', 'matching', 'matching_models_test', 'matching', FALSE );" 
+
+
+SELECT 'matching_models_test_SANS_OD' as mdl, * FROM ML.WEIGHTS(MODEL `matching_models_test_SANS_OD.kiwi_price_lin_reg_model_ASAS_20181101`) 
+UNION ALL
+SELECT 'matching_models_test' as mdl, * FROM ML.WEIGHTS(MODEL `matching_models_test.kiwi_price_lin_reg_model_ASAS_20181101`) 
+
+# ****************************************************************************************
+
+
+
 #$prj='skytra-benchmark-devandtest'
 $prj='skytra-benchmark-uat'
 #$prj='skytra-benchmark-prod'

@@ -1,4 +1,132 @@
 
+
+WITH 
+known_new_req as ( SELECT * FROM UNNEST( ['golden_table_airports','golden_table_operating_carriers','golden_ticketing_carriers','index_rrpk_model_params_201811_201911','skytra_index_regions_ext','Ticketing_to_Operating_Carrier'] ) table_id ),
+known_not_req as ( SELECT * FROM UNNEST( ['X7','od_cabin_class_mapping','index_lin_reg_params_ext','lin_reg_calibration','ext_EURUSD','ext_USD_EUR_','ext_USD_GBP','ext_EURGBP_','index_rrpk_model_params','traffic_region_abbrv','ext_EURUSD_HIST','full_eur_usd','ticket_rrpk_params_201902_20200','unique_airlines_open_flights','GlobalAirportDatabase','Airline_golden_table','Skytra_Airport_Details_t'] ) table_id ),
+
+rnd as (
+SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
+case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-rnd.generic.__TABLES__` 
+--where TIMESTAMP_MILLIS(creation_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 60 DAY) OR TIMESTAMP_MILLIS(last_modified_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 60 DAY) OR type <> 1
+),
+/*mig as (
+SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
+case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-rnd.generic.__TABLES__` 
+),*/
+uat as (
+SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
+case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-uat.generic.__TABLES__` 
+)
+SELECT 
+CASE
+ WHEN known_new_req.table_id IS NOT NULL THEN 'KNOWN NEW TABLE'
+ WHEN known_not_req.table_id IS NOT NULL THEN 'PROBABLE NOT NEEDED'
+  WHEN rnd.table_id = uat.table_id THEN
+    CASE 
+      WHEN FORMAT('%t', STRUCT(rnd.row_count,rnd.size_bytes,rnd.type)) = FORMAT('%t', STRUCT(uat.row_count,uat.size_bytes,uat.type)) THEN 'PROBABLE FULL MATCH'
+      ELSE 'FOUND - NOT MATCHED !!'
+    END
+  WHEN rnd.table_id IS NOT NULL THEN 'RnD ONLY ?'
+  WHEN uat.table_id IS NOT NULL THEN 'UAT ONLY ?'
+END as Table_Status,
+CONCAT(rnd.project_id,'.',rnd.dataset_id,'.',rnd.table_id) as rnd_key_s, 
+rnd.row_count,rnd.size_bytes,rnd.type,rnd.creation_time,rnd.last_modified_time,
+CONCAT(uat.project_id,'.',uat.dataset_id,'.',uat.table_id) as uat_key_s,
+uat.row_count,uat.size_bytes,uat.type
+from 
+rnd
+--full outer join mig on (rnd.project_id,rnd.dataset_id,rnd.table_id) = (mig.project_id,mig.dataset_id,mig.table_id)
+full outer join uat on (rnd.dataset_id,rnd.table_id) = (uat.dataset_id,uat.table_id)
+left join known_new_req on rnd.table_id = known_new_req.table_id
+left join known_not_req on rnd.table_id = known_not_req.table_id
+ORDER BY 1, COALESCE(rnd.table_id,uat.table_id) --type desc, last_modified_time desc
+
+
+-------------------------------------
+
+
+WITH extraTableInfo as (
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `kiwi.__TABLES__` UNION ALL
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `matching.__TABLES__` UNION ALL
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `index.__TABLES__` UNION ALL
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `iata.__TABLES__` UNION ALL
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `generic.__TABLES__`
+)
+SELECT * from extraTableInfo ORDER BY 1 ,last_modified_time desc
+
+
+
+-------------------------------------
+
+
+WITH allDsTables as (
+SELECT * FROM kiwi.INFORMATION_SCHEMA.TABLES      WHERE  table_name in('X5a','X5b_v5') UNION ALL
+SELECT * FROM matching.INFORMATION_SCHEMA.TABLES  WHERE  table_name in('X6','X7') UNION ALL
+SELECT * FROM index.INFORMATION_SCHEMA.TABLES     WHERE  table_name in('X8','X9','X11','X12','X13') UNION ALL
+SELECT * FROM iata.INFORMATION_SCHEMA.TABLES      WHERE  table_name in('X1_Pre_Daily_Merged_v2', 'X3', 'R1', 'R2','R3I3') 
+/*
+SELECT * FROM `skytra-benchmark-rnd.kiwi.__TABLES__` UNION ALL
+SELECT * FROM `skytra-benchmark-rnd.matching.__TABLES__` UNION ALL
+SELECT * FROM `skytra-benchmark-rnd.index.__TABLES__` UNION ALL
+SELECT * FROM `iata.__TABLES__` 
+*/
+ORDER BY 1,2
+),
+
+unqNames as (select STRUCT(TABLE_SCHEMA, TABLE_NAME) as unq from allDsTables),
+
+extraTableInfo as (
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `kiwi.__TABLES__`
+  WHERE (dataset_id, table_id) IN(SELECT unq from unqNames) UNION ALL
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `matching.__TABLES__`
+  WHERE (dataset_id, table_id) IN(SELECT unq from unqNames) UNION ALL
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `index.__TABLES__`
+  WHERE (dataset_id, table_id) IN(SELECT unq from unqNames) UNION ALL
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `iata.__TABLES__`
+  WHERE (dataset_id, table_id) IN(SELECT unq from unqNames)
+),
+
+
+allDsTableOptions as (
+SELECT TABLE_SCHEMA, table_name,option_name FROM kiwi.INFORMATION_SCHEMA.TABLE_OPTIONS       WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and option_name = "require_partition_filter" UNION ALL
+SELECT TABLE_SCHEMA, table_name,option_name FROM matching.INFORMATION_SCHEMA.TABLE_OPTIONS   WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and option_name = "require_partition_filter" UNION ALL
+SELECT TABLE_SCHEMA, table_name,option_name FROM index.INFORMATION_SCHEMA.TABLE_OPTIONS      WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and option_name = "require_partition_filter" UNION ALL
+SELECT TABLE_SCHEMA, table_name,option_name FROM iata.INFORMATION_SCHEMA.TABLE_OPTIONS       WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and option_name = "require_partition_filter"
+ORDER BY 1,2
+),
+# select * from allDsTableOptions
+# SELECT * FROM kiwi.INFORMATION_SCHEMA.COLUMNS WHERE (TABLE_SCHEMA, TABLE_NAME) = STRUCT('kiwi','X5a')
+
+allDsPtn as (
+SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partitioning_column, 'NO', '') as is_partitioning_column, clustering_ordinal_position) ORDER BY is_partitioning_column DESC, clustering_ordinal_position) as part_info FROM kiwi.INFORMATION_SCHEMA.COLUMNS       
+  WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and (is_partitioning_column = "YES" OR clustering_ordinal_position > 0) GROUP BY 1,2 UNION ALL
+SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partitioning_column, 'NO', '') as is_partitioning_column, clustering_ordinal_position) ORDER BY is_partitioning_column DESC, clustering_ordinal_position) as part_info FROM matching.INFORMATION_SCHEMA.COLUMNS       
+  WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and (is_partitioning_column = "YES" OR clustering_ordinal_position > 0) GROUP BY 1,2 UNION ALL
+SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partitioning_column, 'NO', '') as is_partitioning_column, clustering_ordinal_position) ORDER BY is_partitioning_column DESC, clustering_ordinal_position) as part_info FROM index.INFORMATION_SCHEMA.COLUMNS       
+  WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and (is_partitioning_column = "YES" OR clustering_ordinal_position > 0) GROUP BY 1,2 UNION ALL
+SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partitioning_column, 'NO', '') as is_partitioning_column, clustering_ordinal_position) ORDER BY is_partitioning_column DESC, clustering_ordinal_position) as part_info FROM iata.INFORMATION_SCHEMA.COLUMNS       
+  WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and (is_partitioning_column = "YES" OR clustering_ordinal_position > 0) GROUP BY 1,2
+ORDER BY 1,2
+)
+# select * from allDsPtn
+
+SELECT
+t.* EXCEPT(table_type,is_insertable_into,is_typed), 
+eti.last_modified_time, eti.row_count, eti.size_bytes,
+topt.option_name, 
+ptn.part_info
+FROM 
+allDsTables t
+inner join extraTableInfo eti on  (t.TABLE_SCHEMA, t.TABLE_NAME) = (eti.dataset_id, eti.table_id)
+left join allDsTableOptions topt on (t.TABLE_SCHEMA, t.TABLE_NAME) = (topt.TABLE_SCHEMA, topt.TABLE_NAME)
+left join allDsPtn ptn on (t.TABLE_SCHEMA, t.TABLE_NAME) = (ptn.TABLE_SCHEMA, ptn.TABLE_NAME)
+ORDER BY 1,2,3
+
+
+
+
+
+
 SELECT 
 CONCAT( 'bq cp ', table_schema, '.', table_name, ' scratch_PaD_PreDeployBak_Expire14d.', table_name, '_20200629') as bq_bak 
 FROM 

@@ -4,8 +4,13 @@
 --bq mk --table --time_partitioning_field search_date --schema ./kiwi.X4_ARRAY.json kiwi_PROD.X4_ARRAY
 
 #LegacySQL
-SELECT partition_id FROM [kiwi.X5b$__PARTITIONS_SUMMARY__] 
---min 20200412 as at 20200617 ie same day that I reduced expiry to 50d
+SELECT substring(partition_id,1,4) as myYear, min(partition_id) as minPtn, max(partition_id) as maxPtn, COUNT(*) AS rc FROM [kiwi.X5b$__PARTITIONS_SUMMARY__] 
+WHERE partition_id <> '__NULL__'
+GROUP BY 1
+
+
+#LegacySQL
+SELECT MONTH(last_modified_timestamp) as MonthRan, DAY(last_modified_timestamp) as DayRan, min(partition_id) as minPtn, max(partition_id) as maxPtn, COUNT(*) AS rc FROM [kiwi.X5b$__PARTITIONS_SUMMARY__] GROUP BY 1,2 ORDER BY 3
 
 
 -- -f skips confirmation bq rm -f -t 
