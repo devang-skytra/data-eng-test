@@ -3,6 +3,27 @@
 
 gcloud config get-value core/project
 
+# Dealing with duplicate iata downloads
+#	gsutil cp -r gs://ext-iata-excl-data/data/y=2020/m=08/2020*_2020080* gs://ext-iata-excl-data/data_duplicates/y=2020/m=08/
+
+
+	/*
+
+	DELETE `skytra-benchmark-uat.index.X11` WHERE first_flight_date_utc >= '2020-07-27';
+	DELETE `skytra-benchmark-uat.index.X9`  WHERE first_flight_date_utc >= '2020-07-27';
+	DELETE `skytra-benchmark-uat.index.X8`  WHERE first_flight_date_utc >= '2020-07-27';
+
+
+	DELETE `skytra-benchmark-uat.matching.X7` WHERE first_flight_date_utc >= '2020-07-27';                                                                                               
+	# 67 daily  AND  FinalOutput_2019 with 2,945,574 rows ************* NB: FinalOutput_2019 rows gone forever if DOI is in 2019 (60 days DOI only taken)
+
+
+	DELETE `skytra-benchmark-uat.matching.X6` WHERE first_flight_date_utc IS NOT NULL      and  FILE_SOURCE between 'IATA_daily_api_20200727' and 'IATA_daily_api_20201027';  
+	# 67 daily
+
+	*/
+
+
 # 2020 10 28
 # ****************************************************************************************
 # ****************************************************************************************
@@ -11,9 +32,15 @@ gcloud config get-value core/project
 # *****  DONE  External Table Deploy
 # *****************************************************
 	cd c:\git\index2\bq\t
-
+	
+#bq rm -t generic.ext_EURUSD
 	bq mk --project_id=$prj --external_table_definition=./generic.ext_EURUSD_defn.json --schema ./generic.ext_EURUSD_schema.json generic.ext_EURUSD
-	bq mk --project_id=$prj --external_table_definition=./iata.ext_data_gz_defn.json --schema ./iata.X1.json iata.ext_data_gz
+	
+bq mk --project_id=$prj --external_table_definition=./iata.ext_data_gz_defn.json --schema ./iata.X1.json iata.ext_data_gz
+
+bq mk --project_id=$prj --external_table_definition=./iata.ext_data_gz_defn.json --schema ./iata.X1_without_FILESOURCE.json iata.ext_data_gz_autodetect
+
+
 	bq mk --project_id=$prj --external_table_definition=./iata.ext_data_defn.json --schema ./iata.X1.json iata.ext_data
 	bq mk --project_id=$prj --external_table_definition=./stat.iata_stats_defn.json stat.iata_stats
 	bq mk --project_id=$prj --external_table_definition=./stat.kiwi_stats_defn.json --schema ./stat.kiwi_stats_schema.json stat.kiwi_stats
@@ -27,7 +54,7 @@ gcloud config get-value core/project
 
 	#  CONFIRMED  'iata.X1_Pre_Daily_Merged_v2' prepared in UAT and unchanged in RnD ??
 
-	$tbls='generic.golden_table_airports','generic.golden_table_operating_carriers','generic.golden_ticketing_carriers','generic.index_rrpk_model_params_201811_201911','generic.spot_window_regions_ext','generic.skytra_index_regions','generic.Ticketing_to_Operating_Carrier'
+	$tbls='generic.golden_table_airports','generic.golden_table_operating_carriers','generic.golden_ticketing_carriers','generic.index_rrpk_model_params_201811_201911','generic.spot_window_regions_ext','generic.skytra_index_regions','generic.Ticketing_to_Operating_Carrier','ticket_rrpk_params_201902_202002'
 	foreach ($t in $tbls) { 
 		$cmd = "bq cp -f skytra-benchmark-rnd:$t $t"
 		#echo $cmd
@@ -35,7 +62,7 @@ gcloud config get-value core/project
 	} 
 
 
-# ***** Fact Table Copy
+# *****  DONE  Fact Table Copy
 # *****************************************************
 
 # 1 [scratch_SaN.X5b$__PARTITIONS_SUMMARY__] 2018 274 from 20180401
@@ -46,6 +73,7 @@ bq cp -f skytra-benchmark-rnd:kiwi.X5b_v5 skytra-benchmark-uat:kiwi.X5b
 
 
 $tbls ='iata.X3','iata.R1','iata.R2','iata.R3I3','matching.X6','matching.X7','index.X8','index.X9','index.X11','index.X12'
+$tbls ='matching.X6','matching.X7'
 foreach ($t in $tbls) { 
 	$cmd = "bq cp -f skytra-benchmark-rnd:$t $t"
 	#echo $cmd
@@ -102,10 +130,20 @@ Waiting on bqjob_r5855dbbb6ddcaa80_0000017589ff088b_1 ... (0s) Current status: D
 	# gsutil -m cp -r py %bkt_dag%/py
 
 
-	gsutil -m cp -r *v5_0_0.py $bkt_dag
+	# gsutil -m cp -r *v5_0_0.py $bkt_dag
+	#   OR
+$dags='dag_iata_daily_v5_0_0.py','dag_matching_daily_v5_0_0.py','dag_index_daily_v5_0_0.py'
+$dags='dag_iata_to_index_v5_0_0_Catchup_Version.py'
+foreach ($d in $dags) { 
+	$cmd = "gsutil -m cp -r $d $bkt_dag/$d"
+	#echo $cmd
+	$cmd | Invoke-Expression
+}
+
+
 
 	$qrys='sq/X5a.sql','sq/X5b.sql','sq/X12.sql','py/op_gen.py'
-	$qrys='py/op_gen.py'
+	$qrys='sq/X5a.sql'
 	foreach ($q in $qrys) { 
 		$cmd = "gsutil -m cp -r $q $bkt_dag/$q"
 		#echo $cmd

@@ -7,7 +7,7 @@ known_not_req as ( SELECT * FROM UNNEST( ['X7','od_cabin_class_mapping','index_l
 rnd as (
 SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
 case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-rnd.generic.__TABLES__` 
---where TIMESTAMP_MILLIS(creation_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 60 DAY) OR TIMESTAMP_MILLIS(last_modified_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 60 DAY) OR type <> 1
+where TIMESTAMP_MILLIS(creation_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 2 DAY) OR TIMESTAMP_MILLIS(last_modified_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 2 DAY) OR type <> 1
 ),
 /*mig as (
 SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
@@ -60,6 +60,9 @@ SELECT * from extraTableInfo ORDER BY 1 ,last_modified_time desc
 
 
 WITH allDsTables as (
+
+SELECT * FROM generic.INFORMATION_SCHEMA.TABLES   WHERE  table_name in('golden_table_airports','golden_table_operating_carriers','golden_ticketing_carriers','index_rrpk_model_params_201811_201911','spot_window_regions_ext','skytra_index_regions','Ticketing_to_Operating_Carrier') UNION ALL
+
 SELECT * FROM kiwi.INFORMATION_SCHEMA.TABLES      WHERE  table_name in('X5a','X5b_v5') UNION ALL
 SELECT * FROM matching.INFORMATION_SCHEMA.TABLES  WHERE  table_name in('X6','X7') UNION ALL
 SELECT * FROM index.INFORMATION_SCHEMA.TABLES     WHERE  table_name in('X8','X9','X11','X12','X13') UNION ALL
@@ -76,6 +79,10 @@ ORDER BY 1,2
 unqNames as (select STRUCT(TABLE_SCHEMA, TABLE_NAME) as unq from allDsTables),
 
 extraTableInfo as (
+
+SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `generic.__TABLES__`
+    WHERE (dataset_id, table_id) IN(SELECT unq from unqNames) UNION ALL
+	
 SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `kiwi.__TABLES__`
   WHERE (dataset_id, table_id) IN(SELECT unq from unqNames) UNION ALL
 SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes FROM `matching.__TABLES__`
@@ -88,6 +95,9 @@ SELECT dataset_id, table_id, TIMESTAMP_MILLIS(last_modified_time) as last_modifi
 
 
 allDsTableOptions as (
+
+SELECT TABLE_SCHEMA, table_name,option_name FROM generic.INFORMATION_SCHEMA.TABLE_OPTIONS    WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and option_name = "require_partition_filter" UNION ALL
+
 SELECT TABLE_SCHEMA, table_name,option_name FROM kiwi.INFORMATION_SCHEMA.TABLE_OPTIONS       WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and option_name = "require_partition_filter" UNION ALL
 SELECT TABLE_SCHEMA, table_name,option_name FROM matching.INFORMATION_SCHEMA.TABLE_OPTIONS   WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and option_name = "require_partition_filter" UNION ALL
 SELECT TABLE_SCHEMA, table_name,option_name FROM index.INFORMATION_SCHEMA.TABLE_OPTIONS      WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and option_name = "require_partition_filter" UNION ALL
@@ -98,6 +108,10 @@ ORDER BY 1,2
 # SELECT * FROM kiwi.INFORMATION_SCHEMA.COLUMNS WHERE (TABLE_SCHEMA, TABLE_NAME) = STRUCT('kiwi','X5a')
 
 allDsPtn as (
+
+SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partitioning_column, 'NO', '') as is_partitioning_column, clustering_ordinal_position) ORDER BY is_partitioning_column DESC, clustering_ordinal_position) as part_info FROM generic.INFORMATION_SCHEMA.COLUMNS       
+  WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and (is_partitioning_column = "YES" OR clustering_ordinal_position > 0) GROUP BY 1,2 UNION ALL
+  
 SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partitioning_column, 'NO', '') as is_partitioning_column, clustering_ordinal_position) ORDER BY is_partitioning_column DESC, clustering_ordinal_position) as part_info FROM kiwi.INFORMATION_SCHEMA.COLUMNS       
   WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and (is_partitioning_column = "YES" OR clustering_ordinal_position > 0) GROUP BY 1,2 UNION ALL
 SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partitioning_column, 'NO', '') as is_partitioning_column, clustering_ordinal_position) ORDER BY is_partitioning_column DESC, clustering_ordinal_position) as part_info FROM matching.INFORMATION_SCHEMA.COLUMNS       
@@ -107,23 +121,31 @@ SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partit
 SELECT TABLE_SCHEMA, table_name, ARRAY_AGG(STRUCT(column_name, replace(is_partitioning_column, 'NO', '') as is_partitioning_column, clustering_ordinal_position) ORDER BY is_partitioning_column DESC, clustering_ordinal_position) as part_info FROM iata.INFORMATION_SCHEMA.COLUMNS       
   WHERE (TABLE_SCHEMA, TABLE_NAME) IN(SELECT unq from unqNames) and (is_partitioning_column = "YES" OR clustering_ordinal_position > 0) GROUP BY 1,2
 ORDER BY 1,2
-)
-# select * from allDsPtn
+),
+
+allDsPtnFlat as ( select * EXCEPT(part_info), p from allDsPtn, UNNEST(part_info) p )
+-- SELECT * FROM allDsPtnFlat
 
 SELECT
+CURRENT_TIMESTAMP as Report_As_At,
+t.TABLE_CATALOG as BQ_Project,
 t.* EXCEPT(table_type,is_insertable_into,is_typed), 
 eti.last_modified_time, eti.row_count, eti.size_bytes,
 topt.option_name, 
-ptn.part_info
+-- ptn.part_info
+-- if using allDsPtnFlat, separate columns like so rather than ptn.part_info ARRAY above...
+p.column_name, p.is_partitioning_column,	p.clustering_ordinal_position
 FROM 
 allDsTables t
 inner join extraTableInfo eti on  (t.TABLE_SCHEMA, t.TABLE_NAME) = (eti.dataset_id, eti.table_id)
 left join allDsTableOptions topt on (t.TABLE_SCHEMA, t.TABLE_NAME) = (topt.TABLE_SCHEMA, topt.TABLE_NAME)
-left join allDsPtn ptn on (t.TABLE_SCHEMA, t.TABLE_NAME) = (ptn.TABLE_SCHEMA, ptn.TABLE_NAME)
-ORDER BY 1,2,3
+--left join allDsPtn ptn on (t.TABLE_SCHEMA, t.TABLE_NAME) = (ptn.TABLE_SCHEMA, ptn.TABLE_NAME)
+-- cannot export to CSV unless flat so for this purpose use allDsPtnFlat
+left join allDsPtnFlat ptn on (t.TABLE_SCHEMA, t.TABLE_NAME) = (ptn.TABLE_SCHEMA, ptn.TABLE_NAME)
+ORDER BY 3,4,5
 
 
-
+-------------------------------------
 
 
 
