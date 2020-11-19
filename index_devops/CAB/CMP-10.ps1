@@ -5,7 +5,7 @@
 $prj='skytra-benchmark-prod'
 gcloud config set core/project $prj
 
-git checkout feature/IN-1092-create-a-waterfall-pricing-mecha
+git checkout MASTER ?? OR  feature/IN-1092-create-a-waterfall-pricing-mecha
 git pull
 
 #gcloud auth login paul.desmond@skytraindices.com
@@ -77,5 +77,8 @@ $cmd | Invoke-Expression
 } #Write-Output
 
 
+
+# TO DO - CLOUD FUNCTION DEPLOY - CAREFUL RE TRIGGER BUCKET OR SUGGEST WE DONT DEPLOY
+# gcloud auth login cloud-functions@skytra-benchmark-prod.iam.gserviceaccount.com
 
 
