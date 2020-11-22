@@ -1,14 +1,57 @@
 #!/usr/bin/env pwsh
 # chmod +x .git/hooks/*-commit
+# https://sqlnotesfromtheunderground.wordpress.com/2018/01/01/git-pre-commit-hook-with-powershell/
+# https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection?view=powershell-7.1
 
-# Verify user's Git config has appropriate email address
-if ($env:GIT_AUTHOR_EMAIL -notmatch '@(non\.)?acme\.com$') {
-    Write-Warning "Your Git email address '$env:GIT_AUTHOR_EMAIL' is not configured correctly."
-    Write-Warning "It should end with '@acme.com' or '@non.acme.com'."
-    Write-Warning "Use the command: 'git config --global user.email <name@acme.com>' to set it correctly."
-    exit 1
+exit 0
+
+$changes = git diff --name-only
+
+$bq_t = @()
+$bq_p = @()
+#$air_cp = @()
+#$air_dag = @()
+
+
+foreach ($change in $changes) 
+{
+
+    $splitPath = $change.Split([char[]] "./")
+
+    switch ($splitPath[0]) 
+    {
+        'Crush' 
+        { 
+            $prj = "prjCrush"
+            switch ($splitPath[1]) 
+            {
+                'bq'  
+                { switch ($splitPath[2]) 
+                        {
+                            't' {$bq_t += $change}
+                            # "Get-Content $q.sql | bq query --project_id=$prj --use_legacy_sql=false"
+                            'p' {$bq_p += $change}
+                        }
+                }
+
+            }
+        }
+    }
 }
 
-Write-Warning "pre-commit is indeed triggering"
-exit 0
+foreach ($t in $bq_t) 
+{
+    #$cmd = 
+    Get-Content $t | bq query --project_id=$prj --use_legacy_sql=false
+    #Write-Output $cmd
+}
+
+exit 1
+
+#if ($output.Count -ne 0) {
+#Write-Warning ($output -join "`r`n")
+#exit 1
+#}
+
+# sq and sp do not contain('d-dat','-rnd','-dev','-uat')
 
