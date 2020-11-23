@@ -3,8 +3,6 @@
 # https://sqlnotesfromtheunderground.wordpress.com/2018/01/01/git-pre-commit-hook-with-powershell/
 # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection?view=powershell-7.1
 
-exit 0
-
 $changes = git diff --name-only
 
 $bq_t = @()
@@ -22,7 +20,7 @@ foreach ($change in $changes)
     {
         'Crush' 
         { 
-            $prj = "prjCrush"
+            $prj = 'forfree-288615'
             switch ($splitPath[1]) 
             {
                 'bq'  
@@ -39,19 +37,16 @@ foreach ($change in $changes)
     }
 }
 
+# ALWAYS deploy Tables first
 foreach ($t in $bq_t) 
 {
     #$cmd = 
-    Get-Content $t | bq query --project_id=$prj --use_legacy_sql=false
+    Get-Content $t | bq query --project_id=$prj --use_legacy_sql=false --dry_run
     #Write-Output $cmd
 }
 
-exit 1
+foreach ($p in $bq_p) 
+{    Get-Content $p | bq query --project_id=$prj --use_legacy_sql=false --dry_run   }
 
-#if ($output.Count -ne 0) {
-#Write-Warning ($output -join "`r`n")
-#exit 1
-#}
-
+exit 0
 # sq and sp do not contain('d-dat','-rnd','-dev','-uat')
-
