@@ -1,4 +1,8 @@
 
+
+SELECT dag_id, CAST(execution_date AS DATE) as dte, count(*) FROM task_instance WHERE dag_id = 'BI_Reports_GeneratorV2' group by 1,2 order by 1,2
+
+
 --Airflow Data Profiling
 
 --Ad Hoc Query
