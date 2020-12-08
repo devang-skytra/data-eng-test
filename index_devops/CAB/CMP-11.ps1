@@ -35,7 +35,13 @@ cd af\dags
 
 $bkt_dag='gs://europe-west2-benchmark-prod-8d6b30f8-bucket/dags'
 
-$qrys='sq/BA_X13_SIDF.sql','sq/BA_X13_SISVDF.sql','dag_BA_Trillo_BizDays_v5_0_2.py','dag_BA_Trillo_Staging_daily_v5_0_2.py'
+$qrys='sq/BA_X13_SIDF.sql','sq/BA_X13_SISVDF.sql','dag_BA_Trillo_Staging_daily_v5_0_2.py'
+foreach ($q in $qrys) { 
+	$cmd = "gsutil -m cp -r $q $bkt_dag/$q"
+	$cmd | Invoke-Expression
+} 
+
+$qrys='dag_BA_Trillo_BizDays_v5_0_2.py'
 foreach ($q in $qrys) { 
 	$cmd = "gsutil -m cp -r $q $bkt_dag/$q"
 	$cmd | Invoke-Expression
