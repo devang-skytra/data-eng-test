@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE `forfree-288615.aaa_Crush.p_jobs_by_project`(region STRING, pj_include ARRAY<STRING>, pj_exclude ARRAY<STRING>, ds_include ARRAY<STRING>, ds_exclude ARRAY<STRING>)
+CREATE OR REPLACE PROCEDURE aaa_Crush.p_jobs_by_project(region STRING, pj_include ARRAY<STRING>, pj_exclude ARRAY<STRING>, ds_include ARRAY<STRING>, ds_exclude ARRAY<STRING>)
 BEGIN
 
   # CALL aaa_Crush.p_jobs_by_project('region-us', ['forfree-288615'], [], [], ['inf_sch_us','aaa_Crush'])

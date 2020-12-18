@@ -1,22 +1,48 @@
-CREATE OR REPLACE PROCEDURE data_eng.p_generate_dataset_scripts(pj STRING, type STRING, ds_include STRING, ds_exclude STRING)
+CREATE OR REPLACE PROCEDURE 
+#data_eng
+aaa_Crush
+.p_infsch(prj STRING, region STRING, ds_include STRING, tb_exclude STRING, obj_type STRING, op_type STRING)
 BEGIN
-
--- cd ./index_utils/bq/DDL/t
--- file=data_eng.p_infsch.sql
--- cat "$(basename "$file")" | bq query --use_legacy_sql=false 
-declare pj string default 'forfree-288615';
-declare sq string;
-
-set sq = (
-    select  string_agg(concat('select * from `', pj, '.', schema_name, ".__TABLES__` "), 'union all \n')
-    from `forfree-288615`.INFORMATION_SCHEMA.SCHEMATA );
-
-execute immediate ('select * from (' || sq || ')');
-
-
-END
-
 /*
+DECLARE prj DEFAULT 'skytra-benchmark-uat';
+# DECLARE prj DEFAULT 'forfree-288615';
+DECLARE region STRING DEFAULT 'region-eu';
+DECLARE ds_include STRING DEFAULT 'kiwi,iata,matching,index';
+DECLARE tb_exclude STRING DEFAULT "'na'";
+
+sh
+cd ./index_utils/bq/DDL/t
+file=data_eng.p_infsch.sql
+prj=forfree-288615
+cat "$(basename "$file")" | bq query --project_id=$prj --use_legacy_sql=false 
+# OR
+for file in ./*.sql; do
+	cat "$(basename "$file")" | bq query --project_id=$prj --use_legacy_sql=false 
+done
+
+
+ps
+cd C:\git\DataEng\index_utils\bq\DDL\p
+
+$prj='skytra-benchmark-uat'
+$prj='forfree-288615'
+
+$file=data_eng.p_infsch.sql
+"Get-Content $file | bq query --project_id=$prj --use_legacy_sql=false"
+
+# OR
+
+
+Get-ChildItem "." -Filter *.sql | 
+Foreach-Object {
+    $cmd = "(Get-Content $_ -Raw) -replace 'aaa_Crush','eu_aaa_Crush' | bq query --project_id=$prj --use_legacy_sql=false"
+    $cmd | Invoke-Expression
+}    
+
+
+CALL data_eng.p_infsch( 'skytra-benchmark-uat', 'region-eu',  "'iata,'", "'na'" ) 
+
+
 __TABLES__
 table_id,creation_date,last_modified_date,row_count,size_bytes,size_mb,size_gb,type,creation_time,last_modified_time,last_modified_month,dataset_id,project_id
 project_id,dataset_id,table_id,row_count,size_bytes,type,creation_time,last_modified_time
@@ -24,9 +50,34 @@ project_id,dataset_id,table_id,row_count,size_bytes,type,creation_time,last_modi
 INFORMATION_SCHEMA.TABLES
 table_catalog,table_schema,table_name,table_type,is_insertable_into,is_typed,creation_time
 
-
 */
 
+
+declare sq string;
+
+set sq_ds = (
+            select  string_agg(concat(
+                CASE op_type
+                    WHEN 'TRUNC' THEN 'TRUNCATE TABLE `'
+                    WHEN 'SELECT' THEN 'select * from `'
+                END, 
+                pj, '.', schema_name, ".__TABLES__` "), 'union all \n'
+                )
+            from 
+            `forfree-288615`.INFORMATION_SCHEMA.SCHEMATA 
+        );
+
+execute immediate ('select * from (' || sq_ds || ')');
+
+END
+
+
+
+
+
+select  string_agg(concat('select * from `', prj, '.', schema_name, ".__TABLES__` "), 'union all \n')
+from `prj`.INFORMATION_SCHEMA.SCHEMATA
+where schema_name in UNNEST(SPLIT(ds_include));
 
 /*
 SELECT 
