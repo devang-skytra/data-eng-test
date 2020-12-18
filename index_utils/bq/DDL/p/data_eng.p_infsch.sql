@@ -1,4 +1,20 @@
+CREATE OR REPLACE PROCEDURE data_eng.p_generate_dataset_scripts(pj STRING, type STRING, ds_include STRING, ds_exclude STRING)
+BEGIN
+
+-- cd ./index_utils/bq/DDL/t
+-- file=data_eng.p_infsch.sql
+-- cat "$(basename "$file")" | bq query --use_legacy_sql=false 
 declare pj string default 'forfree-288615';
+declare sq string;
+
+set sq = (
+    select  string_agg(concat('select * from `', pj, '.', schema_name, ".__TABLES__` "), 'union all \n')
+    from `forfree-288615`.INFORMATION_SCHEMA.SCHEMATA );
+
+execute immediate ('select * from (' || sq || ')');
+
+
+END
 
 /*
 __TABLES__
@@ -11,9 +27,8 @@ table_catalog,table_schema,table_name,table_type,is_insertable_into,is_typed,cre
 
 */
 
-select  string_agg(concat('select * from `', pj, '.', schema_name, ".__TABLES__` "), 'union all \n')
-from `forfree-288615`.INFORMATION_SCHEMA.SCHEMATA;
 
+/*
 SELECT 
     table_id
     ,DATE(TIMESTAMP_MILLIS(creation_time)) AS creation_date
@@ -43,3 +58,4 @@ select * from `forfree-288615.aaa_Crush.INFORMATION_SCHEMA.TABLES`
 
 )
 ORDER BY dataset_id, table_id asc 
+*/
