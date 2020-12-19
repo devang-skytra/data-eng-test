@@ -1,0 +1,74 @@
+"""
+Component 1  Component 2  Component 3     Component 4      Component 5
+Airline      Geography    Booking period  Delivery period  Metric
+
+Geography
+    "ASAS" : "Asia/Pacific-Asia/Pacific",
+    "NANA" : "North America-North America",
+    "EUEU" : "Europe-Europe",
+    "ASEU" : "Asia/Pacific-Europe",
+    "ASNA" : "Asia/Pacific-North America",
+    "EUNA" : "North America-Europe",
+    "CINA" : "CIS-North America",
+    "AFNA" : "Africa-North America",
+    "LANA" : "Latin America-North America",
+    "MENA" : "Middle East-North America"
+
+Booking Period - iata tx date
+    SP0 (spot window - between product date and product date minus 28 days)
+    Today's date (product date)
+    WEK (data for the 7 days previous to the product date)
+    ALL - all dates in the past
+
+Delivery period (FFD)
+    TTTT - today as first flight date
+    M0xx (delivery period - the next rolling 30 days from today). E.g. today is 25th of June, M01 is from tomorrow up to 25th of July, M02 is from 26th of July up to 25th August)
+    YYQx (delivery period - calendar quarter for quarterly view subscriptions)
+    ALLD - all dates in the future
+
+Metric
+
+  cumulative_ when Delivery Period Month specified, cumulative_ and _7day do not appear together
+
+    YIE (cumulative average yield/RRPK to date) = yoy_yield
+    YYO (cumulative average yield year on year) = yoy_yield_7day if WEK
+    RPK (cumulative volume sold)                = rpk
+    RPY (cumulative volume sold year on year)   = yoy_rpk_7day if WEK
+    NRE (cumulative net revenue)                = net_revenue
+    NRY (cumulative net revenue year on year)   = yoy_net_revenue_7day if WEK
+    GRE (cumulative gross revenue)              = revenue
+    GRY (cumulative gross revenue year on year) = yoy_revenue_7day if WEK
+"""
+
+""" 
+SquarePoint
+
+P021-(99)-(NANA)-(ALL,WEK)-(M073:M092)-(YYO,RPY,GRY,NRY)+
+P001-(99)-(NANA)-(ALL,WEK)-(ALLD)-(YYO,RPY,GRY,NRY)+
+P019-(UA,DL,B6)-(WWWW)-(ALL,WEK)-(M073:M092)-(YYO,RPY,GRY,NRY)+
+P022-(UA,DL,B6)-(WWWW)-(ALL,WEK)-(ALLD)-(YYO,RPY,GRY,NRY)+
+P020-(UA,DL,B6)-(NANA,EUNA,ASNA,AFNA,CINA,LANA,MENA)-(WEK,ALL)-(M073:M092)-(YYO,RPY,GRY,NRY)+
+P002-(UA,DL,B6)-(NANA,EUNA,ASNA,AFNA,CINA,LANA,MENA)-(WEK,ALL)-(ALLD)-(YYO,RPY,GRY,NRY)
+
+Test Subset
+
+P021 - 99NANAALLM073YYO
+P001 - 99NANAWEKALLDRPY
+P019 - UAWWWWALLM092GRY
+P022 - DLWWWWWEKALLDNRY
+P020 - B6MENAWEKM073YYO
+P002 - B6LANAALLALLDGRY
+
+SELECT yoy_yield_7day, yoy_rpk_7day, yoy_revenue_7day, yoy_net_revenue_7day, yoy_yield, yoy_rpk, yoy_revenue, yoy_net_revenue, flight_op_carrier, region_pair, dt_of_issue  FROM scratch_SaN.P002_Revenue_yield_per_region_pair_airline WHERE dt_of_issue >= '2019-01-01' and dt_of_issue <= '2019-12-31' AND flight_op_carrier IN ('UA','DL','B6') AND region_pair IN ('North America-North America','None','None','None','CIS-North America','None','None') 
+
+
+SELECT cumulative_yoy_yield, cumulative_yoy_rpk, cumulative_yoy_revenue, cumulative_yoy_net_revenue, yoy_yield_7day, yoy_rpk_7day, yoy_revenue_7day, yoy_net_revenue_7day, op_carrier, region_pair, dt_of_issue  ,code_delivery FROM scratch_SaN.P019_S_curve_months_per_airline WHERE dt_of_issue >= '2019-01-01' and dt_of_issue <= '2019-12-31' AND op_carrier IN ('UA','DL','B6') AND code_delivery IN ('M073','M074','M075','M076','M077','M078','M079','M080','M081','M082','M083','M084','M085','M086','M087','M088','M089','M090','M091','M092') 
+
+
+SELECT yoy_yield_7day, yoy_rpk_7day, yoy_revenue_7day, yoy_net_revenue_7day, cumulative_yoy_yield, cumulative_yoy_rpk, cumulative_yoy_revenue, cumulative_yoy_net_revenue, op_carrier, region_pair, dt_of_issue  ,code_delivery FROM scratch_SaN.P020_S_curve_months_per_airline_region WHERE dt_of_issue >= '2019-01-01' and dt_of_issue <= '2019-12-31' AND op_carrier IN ('UA','DL','B6') AND region_pair IN ('North America-North America','None','None','None','CIS-North America','None','None') AND code_delivery IN ('M073','M074','M075','M076','M077','M078','M079','M080','M081','M082','M083','M084','M085','M086','M087','M088','M089','M090','M091','M092') 
+
+
+SELECT cumulative_yoy_yield, cumulative_yoy_rpk, cumulative_yoy_revenue, cumulative_yoy_net_revenue, yoy_yield_7day, yoy_rpk_7day, yoy_revenue_7day, yoy_net_revenue_7day, op_carrier, region_pair, dt_of_issue  ,code_delivery FROM scratch_SaN.P021_S_curve_months_per_region WHERE dt_of_issue >= '2019-01-01' and dt_of_issue <= '2019-12-31' AND region_pair IN ('North America-North America') AND code_delivery IN ('M073','M074','M075','M076','M077','M078','M079','M080','M081','M082','M083','M084','M085','M086','M087','M088','M089','M090','M091','M092') 
+
+
+SELECT yoy_yield, yoy_rpk, yoy_revenue, yoy_net_revenue, yoy_yield_7day, yoy_rpk_7day, yoy_revenue_7day, yoy_net_revenue_7day, op_carrier, region_pair, dt_of_issue  FROM scratch_SaN.P022_Revenue_per_airline WHERE dt_of_issue >= '2019-01-01' and dt_of_issue <= '2019-12-31' AND op_carrier IN ('UA','DL','B6') 

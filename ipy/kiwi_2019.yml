@@ -1,0 +1,73 @@
+# https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html  
+# http://zetcode.com/python/yaml/
+
+# NB: Never delete an entire Section, instead remove it from ACTIVE_SECTIONS: if pipeline no longer required
+# By having a list of sections we can generate multiple series of pipelines using a single .py and single .yaml
+ACTIVE_SECTIONS: 
+ - kiwi_2019
+ - kiwi_2019_test_hr
+ - kiwi_2019_test_2d
+ 
+
+kiwi_2019:
+########################CRITICAL - USED FOR BQ Dataset and Table SUFFIX respectively
+ MODE: _PROD
+ TableSuffix: _2019
+########################
+ batchYear: 2019
+ minMonth: 1
+ maxMonth: 12
+ minDay: 1
+ maxDay: 31
+ sourceBucket: ext-kiwi-excl-data
+ # will not be used for kiwi_2019 so blank, instead use source_objects in .py
+ sourceObjects: blank
+ 
+
+
+kiwi_2019_test_hr:
+########################CRITICAL - USED FOR BQ Dataset and Table SUFFIX respectively
+ MODE: _TEST
+ TableSuffix: _2019
+########################
+ batchYear: 2019
+ minMonth: 1
+ maxMonth: 1
+ minDay: 1
+ maxDay: 1
+ sourceBucket: ext-kiwi-excl-data
+ sourceObjects: data/2019/01/01/01/*.gz.parquet
+  
+
+kiwi_2019_test_2d:
+########################CRITICAL - USED FOR BQ Dataset and Table SUFFIX respectively
+ MODE: _TEST
+ TableSuffix: _2019
+########################
+ batchYear: 2019
+ minMonth: 1
+ maxMonth: 1
+ minDay: 2
+ maxDay: 3
+ sourceBucket: ext-kiwi-excl-data
+ # will be filled by dayChar2 in .py
+ sourceObjects: data/2019/01/{}/*.gz.parquet
+
+
+
+exception_testing:
+########################CRITICAL - USED FOR BQ Dataset and Table SUFFIX respectively
+ MODE: _TEST
+ TableSuffix: 
+########################
+ batchYear: 2019
+ minMonth: 1
+ maxMonth: 12
+ minDay: 2
+ maxDay: 3
+ sourceBucket: 
+ sourceObjects: 
+#previously was a list, now just string
+ #sourceObjects:  LIST STYLE
+ # - blank1
+ # - blank2

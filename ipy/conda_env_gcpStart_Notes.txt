@@ -1,0 +1,25 @@
+# https://cloud.google.com/bigquery/docs/visualize-jupyter
+
+conda create -n gcpStart
+## Package Plan ##
+  environment location: c:\Anaconda3\envs\gcpStart
+
+conda env list
+
+conda activate gcpStart
+
+# conda deactivate
+
+
+pip install --upgrade google-cloud-bigquery
+
+pip install google-cloud-storage
+
+pip install gcsfs
+
+
+looks very interesting
+https://pypi.org/project/pandas-profiling/
+
+https://pypi.org/project/pandasvault/
+https://github.com/firmai/pandasvault

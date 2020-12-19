@@ -1,0 +1,13 @@
+sp_process_X4:
+ datasets: 
+  - kiwi_TEST
+  - kiwi_PROD
+ destTable: kiwi_2019
+ #Sort Order PreFileBlock	File	LineReplacePatterns	PostFileBlock
+ listBuildArray: 
+ - 1_na_Kiwi ProcStubStart.sql_na_na
+ - 2_na_IdemPotentDelete_['dtbl', 'Dest Table']_na
+ - 3_na_X4.sql_['WITH', 'CREATE TEMP TABLE ('],
+ - 4_na_QC1.sql_na_na
+ - 5_na_Kiwi ProcStub.sql_na_na
+
