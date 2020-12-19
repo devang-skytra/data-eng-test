@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE data_eng.p_generate_dataset_scripts(prj STRING, region STRING, ds_include STRING, ds_exclude STRING)
+CREATE OR REPLACE PROCEDURE aaa_Crush.p_generate_dataset_scripts(prj STRING, region STRING, ds_include STRING, ds_exclude STRING)
 BEGIN
   /*
   DECLARE prj DEFAULT 'skytra-benchmark-rnd';
@@ -7,30 +7,41 @@ BEGIN
   DECLARE ds_exclude STRING DEFAULT "'na'";
   DECLARE dsets ARRAY<STRING> DEFAULT ['compliance_dashboard_v5'];
   DECLARE i INT64 DEFAULT 1;
+
+
+cd /media/paul/code/dataeng/index_utils/bq/DDL/p
+Get-ChildItem "." -Filter *.sql | 
+Foreach-Object {
+    $cmd = "(Get-Content $_ -Raw) -replace 'aaa_Crush','eu_aaa_Crush' | bq query --project_id=$prj --use_legacy_sql=false"
+    $cmd | Invoke-Expression
+}    
+
+
   */
   
   # CALL data_eng.p_generate_dataset_scripts( 'skytra-benchmark-rnd', 'region-eu',  "'compliance_dashboard_v5'", "'na'" ) 
+  # CALL eu_aaa_Crush.p_generate_dataset_scripts( 'forfree-288615', 'region-eu', "'eu_austin_bikeshare'", "'na'" ) 
   # https://github.com/GoogleCloudPlatform/training-data-analyst/blob/master/courses/data-engineering/demos/information_schema.md
   
   DECLARE dsets ARRAY<STRING>;
   DECLARE i INT64 DEFAULT 1;  # starting ORDINAL for an array is 1
 
   
-  EXECUTE IMMEDIATE ("""CREATE OR REPLACE TABLE data_eng.ztmp_dsets as ( SELECT schema_name 
+  EXECUTE IMMEDIATE ("""CREATE OR REPLACE TABLE aaa_Crush.ztmp_dsets as ( SELECT schema_name 
   FROM """ || CONCAT('`',prj,'.',region) || ".INFORMATION_SCHEMA.SCHEMATA` WHERE ( schema_name IN(" || ds_include || "  ) OR " || ds_include  || " = '' ) AND schema_name NOT IN(" || ds_exclude || "))"
   );
 
-  SET dsets = ARRAY(SELECT schema_name FROM data_eng.ztmp_dsets);
+  SET dsets = ARRAY(SELECT schema_name FROM aaa_Crush.ztmp_dsets);
   
   WHILE i <= ARRAY_LENGTH(dsets) DO
   BEGIN
   
-    EXECUTE IMMEDIATE ( "DELETE data_eng.t_schema_cols WHERE ds = '" || dsets[ORDINAL(i)] || "'" );
+    EXECUTE IMMEDIATE ( "DELETE aaa_Crush.t_schema_cols WHERE ds = '" || dsets[ORDINAL(i)] || "'" );
 
     -- CONCAT('`', table_catalog, '.', table_schema, '.', table_name, '`') AS tb_full,
     -- AND table_name in('R3','R5','R6','R7_flights','R7_itineraries')
     -- AND substring(table_name,1,4) in('A001','A002','A004','A012','A013','A018','A019','A020','A021','R7_i')
-    EXECUTE IMMEDIATE ( """INSERT INTO data_eng.t_schema_cols   
+    EXECUTE IMMEDIATE ( """INSERT INTO aaa_Crush.t_schema_cols   
       SELECT 
       table_catalog as pj, table_schema as ds, table_name as tb,
       CONCAT("{{ dag_run.conf['dset'] if 'dset' in dag_run.conf else '""" || dsets[ORDINAL(i)] || """' }}", '.', table_name) AS tb_full,
@@ -50,24 +61,24 @@ BEGIN
       GROUP BY table_catalog, table_schema, t.table_name""" 
     );
     
-    UPDATE data_eng.t_schema_cols SET script = (
+    UPDATE aaa_Crush.t_schema_cols SET script = (
       SELECT
         CONCAT(
           -- needs to be 'OR REPLACE TABLE' or 'TABLE IF NOT EXISTS' latter safely deploys only if doesn't already exist
           "CREATE {{ dag_run.conf['create_type'] if 'create_type' in dag_run.conf else 'TABLE IF NOT EXISTS' }} ",
           tb_full,
           '\n',
-          data_eng.f_MakeColumnList(columns),
-          data_eng.f_MakePartitionByClause(columns),
-          data_eng.f_MakeClusterByClause(columns),
-          data_eng.f_MakeOptionList(options),
+          aaa_Crush.f_MakeColumnList(columns),
+          aaa_Crush.f_MakePartitionByClause(columns),
+          aaa_Crush.f_MakeClusterByClause(columns),
+          aaa_Crush.f_MakeOptionList(options),
           ';'
           ) 
         )
     WHERE ds = dsets[ORDINAL(i)];
     
 
-    SELECT STRING_AGG(CONCAT(script,'\n') ORDER BY tb) from data_eng.t_schema_cols WHERE ts > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MINUTE);
+    SELECT STRING_AGG(CONCAT(script,'\n') ORDER BY tb) from aaa_Crush.t_schema_cols WHERE ts > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 1 MINUTE);
     /*
     SELECT 
     STRING_AGG(
@@ -88,7 +99,7 @@ BEGIN
       )
     , '' ORDER BY tb
     ) as etl
-    from data_eng.t_schema_cols 
+    from aaa_Crush.t_schema_cols 
     WHERE 
     tb between 'P001' and 'P003'  OR  tb between 'P019' and 'P026'
     */
