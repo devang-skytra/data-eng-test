@@ -1,4 +1,4 @@
-CREATE OR REPLACE TABLE data_eng.t_schema_cols
+CREATE OR REPLACE TABLE aaa_Crush.t_schema_cols
 (
   pj STRING,
   ds STRING,
