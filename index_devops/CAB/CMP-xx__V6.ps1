@@ -2,31 +2,54 @@
 # v5  https://skytra.atlassian.net/browse/CMP-10 (derived from PD-326 Best Index notes.ps1)
 
 
-$prj='skytra-benchmark-prod'
+$prj='skytra-benchmark-uat'
+#$prj='skytra-benchmark-prod'
+
 gcloud config set core/project $prj
 
-gcloud auth login cloud-composer@skytra-benchmark-prod.iam.gserviceaccount.com
+gcloud auth login paul.desmond@skytraindices.com
+# gcloud auth login cloud-composer@skytra-benchmark-prod.iam.gserviceaccount.com
 
-# deployment (not index) DAGs
+# git checkout master
+# git checkout Develop # or 1818
+
+# git pull
+
+
+# *****  Airflow 
 
 cd c:\git\index2\af\dags
 
 $bkt_dag='gs://europe-west2-benchmark-prod-8d6b30f8-bucket/dags'
 
-$qrys='sh/zops_non_generic_ext_deploy.sh','sh/zops_generic_ext_deploy.sh'
-foreach ($q in $qrys) { 
-	$cmd = "gsutil -m cp -r $q $bkt_dag/$q"
+# *****  Airflow gsutil CLEANOUT
+# *****************************************************
+
+# $files='dag_BA_Trillo_BizDays.py','dag_BA_Trillo_Staging_daily.py','dag_iata_daily_v2_2.py','dag_kiwi_daily.py','dag_kiwi_daily_parallel_v5_0_ProdReadLocalGCSTest.py','dag_matching_daily_v1_1.py'
+$files='dag_BA_Trillo_BizDays.py','dag_BA_Trillo_Staging_daily.py'
+foreach ($f in $files) { 
+	gsutil rm $bkt_dag/$f
+} 
+
+
+
+# *****  Airflow gsutil DEPLOY SCHEMA files
+# *****************************************************
+
+$files='sh/zops_non_generic_ext_deploy.sh','sh/zops_generic_ext_deploy.sh'
+foreach ($f in $files) { 
+	$cmd = "gsutil -m cp -r $f $bkt_dag/$f"
 	#echo $cmd
 	$cmd | Invoke-Expression
 } 
 
-gsutil -m cp -r ./dag_zops* $bkt_dag
+
+# gsutil -m cp -r ./dag_zops_AnyDataset_deploy.py $bkt_dag
 
 
-git checkout master
-git pull
 
-#gcloud auth login paul.desmond@skytraindices.com
+
+#
 #gcloud auth login cloud-functions@skytra-benchmark-prod.iam.gserviceaccount.com
 
 
@@ -59,15 +82,15 @@ gcloud composer environments run $inst --location europe-west2 trigger_dag -- $d
 
 
 
-# *****  Airflow gsutil deploy
+# *****  Airflow gsutil DEPLOY PIPELINE dags
 # *****************************************************
 
 cd c:\git\index2\af\dags
 
 
-$qrys='sq/X5a.sql','sq/X5b.sql','sq/X12.sql','sq/X13.sql','py/op_gen.py'
-foreach ($q in $qrys) { 
-	$cmd = "gsutil -m cp -r $q $bkt_dag/$q"
+$files='sq/X5a.sql','sq/X5b.sql','sq/X12.sql','sq/X13.sql','py/op_gen.py'
+foreach ($f in $files) { 
+	$cmd = "gsutil -m cp -r $f $bkt_dag/$f"
 	#echo $cmd
 	$cmd | Invoke-Expression
 } 

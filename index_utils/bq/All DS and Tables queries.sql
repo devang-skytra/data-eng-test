@@ -1,48 +1,164 @@
 
+--------------------------------------------------------------------------
+-- Generate view definitions from INFORMATION_SCHEMA tables
+--------------------------------------------------------------------------
 
-WITH 
-known_new_req as ( SELECT * FROM UNNEST( ['golden_table_airports','golden_table_operating_carriers','golden_ticketing_carriers','index_rrpk_model_params_201811_201911','skytra_index_regions_ext','Ticketing_to_Operating_Carrier'] ) table_id ),
-known_not_req as ( SELECT * FROM UNNEST( ['X7','od_cabin_class_mapping','index_lin_reg_params_ext','lin_reg_calibration','ext_EURUSD','ext_USD_EUR_','ext_USD_GBP','ext_EURGBP_','index_rrpk_model_params','traffic_region_abbrv','ext_EURUSD_HIST','full_eur_usd','ticket_rrpk_params_201902_20200','unique_airlines_open_flights','GlobalAirportDatabase','Airline_golden_table','Skytra_Airport_Details_t'] ) table_id ),
+	SELECT 
+    #substr(table_name,11,2),
+    concat( 'CREATE OR REPLACE VIEW ', REPLACE(concat(table_schema,'.',table_name),'SP','FP'), ' as SELECT * FROM ', concat(table_schema,'.',table_name), ' WHERE EXTRACT(DAYOFWEEK FROM dt_of_issue) = 3;') 
+	FROM airtyx_deliv_SP.INFORMATION_SCHEMA.VIEWS
+	where 
+    substr(table_name,10,2) in('AA','DL', 'AC','AS','B6','UA',  'AF','BA','IB','KL','LH','99')
+	#	and right(table_name,1) = 'M'
+	
+	union all 
 
-rnd as (
-SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
-case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-rnd.generic.__TABLES__` 
-where TIMESTAMP_MILLIS(creation_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 2 DAY) OR TIMESTAMP_MILLIS(last_modified_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 2 DAY) OR type <> 1
-),
-/*mig as (
-SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
-case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-rnd.generic.__TABLES__` 
-),*/
-uat as (
-SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
-case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-uat.generic.__TABLES__` 
-)
-SELECT 
-CASE
- WHEN known_new_req.table_id IS NOT NULL THEN 'KNOWN NEW TABLE'
- WHEN known_not_req.table_id IS NOT NULL THEN 'PROBABLE NOT NEEDED'
-  WHEN rnd.table_id = uat.table_id THEN
-    CASE 
-      WHEN FORMAT('%t', STRUCT(rnd.row_count,rnd.size_bytes,rnd.type)) = FORMAT('%t', STRUCT(uat.row_count,uat.size_bytes,uat.type)) THEN 'PROBABLE FULL MATCH'
-      ELSE 'FOUND - NOT MATCHED !!'
-    END
-  WHEN rnd.table_id IS NOT NULL THEN 'RnD ONLY ?'
-  WHEN uat.table_id IS NOT NULL THEN 'UAT ONLY ?'
-END as Table_Status,
-CONCAT(rnd.project_id,'.',rnd.dataset_id,'.',rnd.table_id) as rnd_key_s, 
-rnd.row_count,rnd.size_bytes,rnd.type,rnd.creation_time,rnd.last_modified_time,
-CONCAT(uat.project_id,'.',uat.dataset_id,'.',uat.table_id) as uat_key_s,
-uat.row_count,uat.size_bytes,uat.type
-from 
-rnd
---full outer join mig on (rnd.project_id,rnd.dataset_id,rnd.table_id) = (mig.project_id,mig.dataset_id,mig.table_id)
-full outer join uat on (rnd.dataset_id,rnd.table_id) = (uat.dataset_id,uat.table_id)
-left join known_new_req on rnd.table_id = known_new_req.table_id
-left join known_not_req on rnd.table_id = known_not_req.table_id
-ORDER BY 1, COALESCE(rnd.table_id,uat.table_id) --type desc, last_modified_time desc
+	SELECT concat( 'CREATE OR REPLACE VIEW ', REPLACE(concat(table_schema,'.',table_name),'S','F'), ' as SELECT * FROM ', concat(table_schema,'.',table_name), ' WHERE EXTRACT(DAYOFWEEK FROM dt_of_issue) = 3;') 
+	FROM airtyx_deliv_S.INFORMATION_SCHEMA.VIEWS
+	where 
+    substr(table_name,9,2) in('AA','DL', 'AC','AS','B6','UA',  'AF','BA','IB','KL','LH','99')
 
 
--------------------------------------
+--------------------------------------------------------------------------
+-- OR use replace of existing view_definition
+--------------------------------------------------------------------------
+
+	SELECT concat( 'CREATE OR REPLACE VIEW ', table_schema,'.',table_name, ' as ', replace(view_definition, '= 4', '= 3;') )
+	FROM airtyx_deliv_FP.INFORMATION_SCHEMA.VIEWS
+	where 
+	# used to be substr(table_name,11,2) with old AIRTYX_SP prefix
+	#substr(table_name,10,2) in('AA','DL', 'AC','AS','B6','UA',  'AF','BA','IB','KL','LH','99') and
+	table_name like 'deliv%'
+
+	union all 
+
+	SELECT concat( 'CREATE OR REPLACE VIEW ', table_schema,'.',table_name, ' as ', replace(view_definition, '= 4', '= 3;') )
+	FROM airtyx_deliv_F.INFORMATION_SCHEMA.VIEWS
+	where 
+	# used to be substr(table_name,11,2) with old AIRTYX_SP prefix
+	#substr(table_name,9,2) in('AA','DL', 'AC','AS','B6','UA',  'AF','BA','IB','KL','LH','99') and
+	table_name like 'deliv%'
+
+
+
+--------------------------------------------------------------------------
+-- Check number of objects in Datasets matching pattern
+--------------------------------------------------------------------------
+
+
+	WITH combo as (
+	SELECT TABLE_SCHEMA, SUBSTRING(TABLE_NAME,10,2) as tbl FROM airtyx_deliv_F.INFORMATION_SCHEMA.VIEWS  WHERE SUBSTRING(TABLE_NAME,10,2) in('AA','DL',  'AF','BA') union all 
+	SELECT TABLE_SCHEMA, SUBSTRING(TABLE_NAME,11,2) as tbl FROM airtyx_deliv_FP.INFORMATION_SCHEMA.VIEWS WHERE SUBSTRING(TABLE_NAME,11,2) in('AA','DL',  'AF','BA') union all 
+	SELECT TABLE_SCHEMA, SUBSTRING(TABLE_NAME,10,2) as tbl FROM airtyx_deliv_S.INFORMATION_SCHEMA.VIEWS  WHERE SUBSTRING(TABLE_NAME,10,2) in('AA','DL',  'AF','BA') union all 
+	SELECT TABLE_SCHEMA, SUBSTRING(TABLE_NAME,11,2) as tbl_NAME FROM airtyx_deliv_SP.INFORMATION_SCHEMA.VIEWS WHERE SUBSTRING(TABLE_NAME,11,2) in('AA','DL',  'AF','BA')
+	)
+
+	SELECT TABLE_SCHEMA, tbl, COUNT(*) as view_count
+	FROM combo
+	GROUP BY 2,1
+	ORDER BY 2,1
+
+
+
+--------------------------------------------------------------------------
+-- Regression Test of table output in old vs new dataset_id
+--------------------------------------------------------------------------
+
+	/*
+	SELECT 
+	LEFT(table_id,2) as carrier, 
+	count (distinct table_id) as carrier_tbl_count,
+	FORMAT("%'d", SUM(row_count)) as row_count
+	FROM
+	--airline_output_files_2.INFORMATION_SCHEMA.TABLES
+	`airline_output_files_2.__TABLES__` 
+	where 
+	-- each of the below filters indiv and coll gives AA and AF 63 + 63 which is correct
+	LEFT(table_id,2) in('AA','AF') 
+	and 
+	TIMESTAMP_MILLIS(last_modified_time) > '2021-02-15 11:00:00.000 UTC'
+	group by 1
+	order by 1
+	*/
+
+
+	with oldt as (
+	SELECT 
+	TABLE_NAME, COLUMN_NAME
+	FROM
+	airline_output_files_pre_parallel_BAK_expires_4d.INFORMATION_SCHEMA.COLUMNS
+	where 
+	LEFT(TABLE_NAME,2) in('AA','AF') 
+	),
+
+	newt as (
+	SELECT 
+	TABLE_NAME, COLUMN_NAME
+	FROM
+	airline_output_files_2.INFORMATION_SCHEMA.COLUMNS
+	where 
+	LEFT(TABLE_NAME,2) in('AA','AF') 
+	)
+
+	select 
+	oldt.*, newt.*,
+	COALESCE(oldt.TABLE_NAME,newt.TABLE_NAME) as tbl,
+	COALESCE(oldt.COLUMN_NAME,newt.COLUMN_NAME) as col
+	from oldt full outer join newt using(TABLE_NAME, COLUMN_NAME)
+	--39816 rows with filter removed
+	where oldt.COLUMN_NAME is null OR newt.COLUMN_NAME is null
+
+
+--------------------------------------------------------------------------
+-- Detect change in RnD/other tables indicating deployment requirement
+--------------------------------------------------------------------------
+
+	WITH 
+	known_new_req as ( SELECT * FROM UNNEST( ['golden_table_airports','golden_table_operating_carriers','golden_ticketing_carriers','index_rrpk_model_params_201811_201911','skytra_index_regions_ext','Ticketing_to_Operating_Carrier'] ) table_id ),
+	known_not_req as ( SELECT * FROM UNNEST( ['X7','od_cabin_class_mapping','index_lin_reg_params_ext','lin_reg_calibration','ext_EURUSD','ext_USD_EUR_','ext_USD_GBP','ext_EURGBP_','index_rrpk_model_params','traffic_region_abbrv','ext_EURUSD_HIST','full_eur_usd','ticket_rrpk_params_201902_20200','unique_airlines_open_flights','GlobalAirportDatabase','Airline_golden_table','Skytra_Airport_Details_t'] ) table_id ),
+
+	rnd as (
+	SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
+	case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-rnd.generic.__TABLES__` 
+	where TIMESTAMP_MILLIS(creation_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 2 DAY) OR TIMESTAMP_MILLIS(last_modified_time) > TIMESTAMP_SUB(CURRENT_TIMESTAMP, INTERVAL 2 DAY) OR type <> 1
+	),
+	/*mig as (
+	SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
+	case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-rnd.generic.__TABLES__` 
+	),*/
+	uat as (
+	SELECT project_id, dataset_id, table_id, TIMESTAMP_MILLIS(creation_time) as creation_time, TIMESTAMP_MILLIS(last_modified_time) as last_modified_time, FORMAT("%'d", row_count) as row_count, FORMAT("%'d", size_bytes) as size_bytes, 
+	case when type = 3 then 'EXTERNAL' when type = 2 then 'VIEW' END as type FROM `skytra-benchmark-uat.generic.__TABLES__` 
+	)
+	SELECT 
+	CASE
+	 WHEN known_new_req.table_id IS NOT NULL THEN 'KNOWN NEW TABLE'
+	 WHEN known_not_req.table_id IS NOT NULL THEN 'PROBABLE NOT NEEDED'
+	  WHEN rnd.table_id = uat.table_id THEN
+		CASE 
+		  WHEN FORMAT('%t', STRUCT(rnd.row_count,rnd.size_bytes,rnd.type)) = FORMAT('%t', STRUCT(uat.row_count,uat.size_bytes,uat.type)) THEN 'PROBABLE FULL MATCH'
+		  ELSE 'FOUND - NOT MATCHED !!'
+		END
+	  WHEN rnd.table_id IS NOT NULL THEN 'RnD ONLY ?'
+	  WHEN uat.table_id IS NOT NULL THEN 'UAT ONLY ?'
+	END as Table_Status,
+	CONCAT(rnd.project_id,'.',rnd.dataset_id,'.',rnd.table_id) as rnd_key_s, 
+	rnd.row_count,rnd.size_bytes,rnd.type,rnd.creation_time,rnd.last_modified_time,
+	CONCAT(uat.project_id,'.',uat.dataset_id,'.',uat.table_id) as uat_key_s,
+	uat.row_count,uat.size_bytes,uat.type
+	from 
+	rnd
+	--full outer join mig on (rnd.project_id,rnd.dataset_id,rnd.table_id) = (mig.project_id,mig.dataset_id,mig.table_id)
+	full outer join uat on (rnd.dataset_id,rnd.table_id) = (uat.dataset_id,uat.table_id)
+	left join known_new_req on rnd.table_id = known_new_req.table_id
+	left join known_not_req on rnd.table_id = known_not_req.table_id
+	ORDER BY 1, COALESCE(rnd.table_id,uat.table_id) --type desc, last_modified_time desc
+
+
+
+--------------------------------------------------------------------------
+-- Detect row count changes in RnD/other tables indicating deployment requirement
+--------------------------------------------------------------------------
 
 
 WITH extraTableInfo as (
@@ -56,7 +172,7 @@ SELECT * from extraTableInfo ORDER BY 1 ,last_modified_time desc
 
 
 
--------------------------------------
+--------------------------------------------------------------------------
 
 
 WITH allDsTables as (

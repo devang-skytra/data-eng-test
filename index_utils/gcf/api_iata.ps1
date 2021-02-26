@@ -31,9 +31,11 @@ $TRG_BUCKET="ext-iata-trig$bktSfx"
 $REGION='europe-west2'
 $SRC_DIR='api_iata'
 
+$sa='cloud-functions@skytra-benchmark-prod.iam.gserviceaccount.com'
+
 cd c:\git\index2\gcf
 
-gcloud functions deploy $FX_NAME --project=$prj --region=$REGION --allow-unauthenticated --entry-point=main --memory=1024MB --runtime=python37 --source=$SRC_DIR --stage-bucket=$STG_BUCKET --timeout=540 --trigger-bucket=$TRG_BUCKET
+gcloud functions deploy $FX_NAME --project=$prj --region=$REGION --allow-unauthenticated --entry-point=main --memory=1024MB --runtime=python37 --source=$SRC_DIR --stage-bucket=$STG_BUCKET --timeout=540 --trigger-bucket=$TRG_BUCKET --service-account=$sa
 
 gcloud functions delete $FX_PRIOR_DELETE --project=$prj 
 
