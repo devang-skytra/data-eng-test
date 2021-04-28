@@ -6,7 +6,7 @@ $prj='skytra-benchmark-uat'
 
 gcloud config set core/project $prj
 
-# gcloud auth login cloud-composer@skytra-benchmark-prod.iam.gserviceaccount.com
+gcloud auth login cloud-composer@skytra-benchmark-prod.iam.gserviceaccount.com
 
 # git checkout master
 # git pull

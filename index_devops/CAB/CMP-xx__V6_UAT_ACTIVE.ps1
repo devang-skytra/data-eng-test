@@ -57,17 +57,49 @@ gsutil -m cp -r ./dag_zops_AnyDataset_deploy.py ${bkt_dag}
 """
 
 
+# *****  DATASETS make
+# *****************************************************
+
+
+$ds='iata_sp','index_sp','log_sp','matching_sp'
+$ds='iata',   'index',   'log',   'matching',  'kiwi','generic'
+foreach ($d in $ds) { bq --location=EU mk --dataset $d }
+
+
+# *****  COPY generic dataset manually
+# *****************************************************
+
+
+
+# *****  Tables single partition cp
+# *****************************************************
+
+#20210101
+$tbls='iata.R1','iata.R2','iata.R3I3','index.X8_doi','index.X9_doi','index.X11_doi','log.proc_load'
+foreach ($t in $tbls) { bq cp "skytra-benchmark-uat:$t`$20210101" $t }
+
+#202101 Month Partitioned
+$tbls='index.X8','index.X9','index.X11','matching.X6','matching.X7'
+foreach ($t in $tbls) { bq cp "skytra-benchmark-uat:$t`$202101" $t }
+
+
 # *****  PROCs deploy
 # *****************************************************
 
 
 cd c:\git\index2\bq\r\sp
 
-$qrys='iata_sp.sp_process_R1','iata_sp.sp_process_R2','iata_sp.sp_process_R3I3','iata_sp.sp_process_X3', 'index_sp.sp_process_X8','index_sp.sp_process_X9','index_sp.sp_process_X11','index_sp.sp_process_X10','index_sp.sp_process_X10_iata','index_sp.sp_process_X10_noBQML','log_sp.sp_proc_load_start','matching_sp.sp_process_X6','matching_sp.sp_process_X6_per_DOIS','matching_sp.sp_process_X7'
+$qrys='iata_sp.sp_process_R1','iata_sp.sp_process_R2','iata_sp.sp_process_R3I3', 'index_sp.sp_process_X8','index_sp.sp_process_X9','index_sp.sp_process_X11','index_sp.sp_process_X10','index_sp.sp_process_X10_iata','index_sp.sp_process_X10_noBQML','log_sp.sp_proc_load_start','matching_sp.sp_process_X6','matching_sp.sp_process_X6_per_DOIS','matching_sp.sp_process_X7'
+
+
+
+$qrys='iata_sp.sp_process_R1','iata_sp.sp_process_R2','iata_sp.sp_process_R3I3','index_sp.sp_process_X8','index_sp.sp_process_X9','index_sp.sp_process_X11','log_sp.sp_proc_load_start','matching_sp.sp_process_X6','matching_sp.sp_process_X7'
+
+not in branch yet
+	'index_sp.sp_process_X8_doi','index_sp.sp_process_X9_doi','index_sp.sp_process_X11_doi'
+
 foreach ($q in $qrys) { 
-	#Get-Content $q | bq query --project_id=$prj --use_legacy_sql=false 
 	$cmd = "Get-Content $q.sql | bq query --project_id=$prj --use_legacy_sql=false"
-	#echo $cmd
 	$cmd | Invoke-Expression
 } #Write-Output
 

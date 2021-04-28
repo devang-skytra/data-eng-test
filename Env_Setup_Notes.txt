@@ -1,3 +1,163 @@
+
+
+https://cloud.google.com/bigquery/docs/access-control
+
+
+2021 03 09 Pre Prod chat with Cong
+
+
+
+
+===============================================================
+Pre Prod BQ Datasets = clone Production datasets ?
+
+skt-preprod-warehouse-xgwm
+===============================================================
+
+
+===============================================================
+Pre Prod AIRFLOW
+
+skt-preprod-cumulus-njor
+===============================================================
+
+
+
+Pre Prod Permissions
+=====================
+
+	data engineer
+	----------------------
+	
+	BQ  - 	
+		bigquery.transfers.get
+		bigquery.jobs.create
+		bigquery.transfers.update
+		
+		bigquery.dataUser (PER DATASET)
+			
+			
+		roles/bigquery.resourceEditor
+		
+		roles/bigquery.jobUser
+		roles/bigquery.metadataViewer
+
+		
+
+	GCC -
+		monitoring
+		
+		
+	GCS -
+	
+	
+	
+	
+	group pipeline-builder
+	----------------------
+	Paul member so can manually upload until have CI/CD
+
+
+	gcc deploy sa
+	----------------------
+	RW europe-west1-skt-preprod-cu-a532b355-bucket/dags
+
+
+	gcc service sa
+	----------------------
+
+	
+
+	gcc Airtyx App sa 
+	(https://cloud.google.com/composer/docs/how-to/managing/connections#creating_new_airflow_connections)
+	"Airflow App" >> 1-few related DAGs >> use 1 specific sa json key/Airflow connection for App which provides permissions for necessary GCP services
+	----------------------
+	
+	unsure if will use KMS or embed key in Airflow connection (see above) if later, fernet keys may be relevant
+	( https://airflow.apache.org/docs/apache-airflow/stable/security/secrets/fernet.html
+	https://cloud.google.com/composer/docs/secret-manager 
+	)
+
+	BQ  - 
+
+		bigquery.dataOwner (PER DATASET - DEFAULT IS EVERY DATASET unless reason not to)
+		
+			BQ (datasets + content exist on UAT ONLY already)
+			-------------------------------------------
+				airtyx_deliv* (x4)
+				airline_output_files
+				airline_input_files
+				airline_output_files
+				client_* (unknown)
+				generic
+				product_(x3)
+		
+		roles/bigquery.jobUser
+		roles/bigquery.metadataViewer
+
+
+
+		[ not needed?
+		x - bigquery.transfers.get
+		x - bigquery.transfers.update
+		]
+		
+		[ if doing fancy Fixed/Flexi slot switching needed
+		bigquery.reservations.*
+		bigquery.reservationAssignments.*
+		]
+
+	GCS - TBD perhaps bucket airtyx-reports-prod ( owner/objectAdmin ?)
+
+
+
+
+C:\git\DataEng\Env_Setup_Notes.txt
+
+AIRTYX VS NON-AIRTYX MIGRATION TIMELINES/OPTIONS TO PROD 2.0
+------------------------------------------
+
+  PaD pref 
+  
+  PROD 1.0 -> PROD 2.0
++ AIRTYX running for Customers in PRE-PROD 2.0 
+
+	then
+	
+  AIRTYX migration to PROD 2.0 
+	
+	
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################################
+
+
 https://cloud.google.com/functions/docs/concepts/iam
 https://cloud.google.com/functions/docs/reference/iam/roles
 https://cloud.google.com/functions/docs/securing/function-identity

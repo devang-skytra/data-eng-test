@@ -3,6 +3,8 @@
 -- Generate view definitions from INFORMATION_SCHEMA tables
 --------------------------------------------------------------------------
 
+-- REPLACE
+
 	SELECT 
     #substr(table_name,11,2),
     concat( 'CREATE OR REPLACE VIEW ', REPLACE(concat(table_schema,'.',table_name),'SP','FP'), ' as SELECT * FROM ', concat(table_schema,'.',table_name), ' WHERE EXTRACT(DAYOFWEEK FROM dt_of_issue) = 3;') 
@@ -17,6 +19,26 @@
 	FROM airtyx_deliv_S.INFORMATION_SCHEMA.VIEWS
 	where 
     substr(table_name,9,2) in('AA','DL', 'AC','AS','B6','UA',  'AF','BA','IB','KL','LH','99')
+	
+-- ADD FILTER
+	
+	
+	SELECT concat(table_schema,'.',table_name) as ds_tb, concat( 'CREATE OR REPLACE VIEW ', table_schema,'.',table_name, ' as ', view_definition, ' where dt_of_issue <= "2020-09-29"')
+	FROM airtyx_deliv_SP.INFORMATION_SCHEMA.VIEWS
+	where 
+	# used to be substr(table_name,11,2) with old AIRTYX_SP prefix
+	substr(table_name,10,2) in('AA','DL', 'AC','AS','B6','UA',  'AF','BA','IB','KL','LH','99') and
+	( table_name like '%2020%' or right(table_name,2) = '_A'  or right(table_name,7) in ('_A_NANA','_A_EUEU') )
+
+	union all 
+
+SELECT concat(table_schema,'.',table_name) as ds_tb, concat( 'CREATE OR REPLACE VIEW ', table_schema,'.',table_name, ' as ', view_definition, ' where dt_of_issue <= "2020-09-29"')
+	FROM airtyx_deliv_S.INFORMATION_SCHEMA.VIEWS
+	where 
+	# used to be substr(table_name,11,2) with old AIRTYX_SP prefix
+	substr(table_name,9,2) in('AA','DL', 'AC','AS','B6','UA',  'AF','BA','IB','KL','LH','99') and
+	( table_name like '%2020%' or right(table_name,2) = '_A'  or right(table_name,7) in ('_A_NANA','_A_EUEU') )
+	
 
 
 --------------------------------------------------------------------------

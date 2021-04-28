@@ -1,7 +1,7 @@
 
 # v5  https://skytra.atlassian.net/browse/CMP-10 (derived from PD-326 Best Index notes.ps1)
 
-
+$prj='paul-d-test-proj'
 $prj='skytra-benchmark-uat'
 #$prj='skytra-benchmark-prod'
 
@@ -114,7 +114,7 @@ foreach ($d in $dags) {
 
 cd c:\git\index2\bq\r\sp
 
-$qrys='iata_sp.sp_process_R1','iata_sp.sp_process_R2','iata_sp.sp_process_R3I3','iata_sp.sp_process_X3', 'index_sp.sp_process_X8','index_sp.sp_process_X9','index_sp.sp_process_X11','log_sp.sp_proc_load_start','matching_sp.sp_process_X6','matching_sp.sp_process_X7'
+$qrys='iata_sp.sp_process_R1','iata_sp.sp_process_R2','iata_sp.sp_process_R3I3','index_sp.sp_process_X8','index_sp.sp_process_X9','index_sp.sp_process_X11','log_sp.sp_proc_load_start','matching_sp.sp_process_X6','matching_sp.sp_process_X7','index_sp.sp_process_X8_doi','index_sp.sp_process_X9_doi','index_sp.sp_process_X11_doi'
 foreach ($q in $qrys) { 
 	#Get-Content $q | bq query --project_id=$prj --use_legacy_sql=false 
 	$cmd = "Get-Content $q.sql | bq query --project_id=$prj --use_legacy_sql=false"

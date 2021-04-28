@@ -18,7 +18,7 @@ gsutil cp ./*.zip gs://airtyx_bi_reports/signed
 # pip3 install --user pyopenssl
 
 f=./signedURLs_${d}.txt
-for i in BMO BNP Barclays CreditSuisse Deutsche
+for i in BMO BNP Barclays CreditSuisse Deutsche Susquehanna Willem
 do
    echo ${i} >> ${f}
    gsutil signurl -d 7d ../gcp_keys/skytra-benchmark-uat-signedURL.json gs://airtyx_bi_reports/signed/${i}_${d}.zip >> ${f}
