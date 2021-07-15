@@ -1,9 +1,16 @@
 
+# related doco
+# C:\Users\PaulDesmond\OneDrive - SKYTRA LIMITED\Shared\pd_IdxTeamShare\pd_DataTeamShare\v6 deployment plan.sh
+# C:\git\DataEng\index_devops\CAB\CMP-xx__V6_UAT_ACTIVE.ps1
+# C:\git\DataEng\index_devops\CAB\CMP-xx__V6.ps1
+# C:\git\DataEng\index_tests\IN-2240-airtyx-parallel-proc-improvement.ps1
+
 # v5  https://skytra.atlassian.net/browse/CMP-10 (derived from PD-326 Best Index notes.ps1)
 
 $prj='paul-d-test-proj'
 $prj='skytra-benchmark-uat'
 #$prj='skytra-benchmark-prod'
+$prj='skt-uat-warehouse-id-2a3e'
 
 gcloud config set core/project $prj
 
@@ -112,9 +119,10 @@ foreach ($d in $dags) {
 # *****************************************************
 
 
-cd c:\git\index2\bq\r\sp
+cd c:\git\index2\V6\bq\r\sp
 
-$qrys='iata_sp.sp_process_R1','iata_sp.sp_process_R2','iata_sp.sp_process_R3I3','index_sp.sp_process_X8','index_sp.sp_process_X9','index_sp.sp_process_X11','log_sp.sp_proc_load_start','matching_sp.sp_process_X6','matching_sp.sp_process_X7','index_sp.sp_process_X8_doi','index_sp.sp_process_X9_doi','index_sp.sp_process_X11_doi'
+
+$qrys='log_sp.sp_proc_load_start','log_sp.sp_proc_load_end','iata_sp.sp_process_R1','iata_sp.sp_process_R2','iata_sp.sp_process_R3I3','index_sp.sp_process_X8','index_sp.sp_process_X9','index_sp.sp_process_X11','log_sp.sp_proc_load_start','matching_sp.sp_process_X6','matching_sp.sp_process_X7','index_sp.sp_process_X8_doi_based','index_sp.sp_process_X9_doi_based','index_sp.sp_process_X11_doi_based'
 foreach ($q in $qrys) { 
 	#Get-Content $q | bq query --project_id=$prj --use_legacy_sql=false 
 	$cmd = "Get-Content $q.sql | bq query --project_id=$prj --use_legacy_sql=false"

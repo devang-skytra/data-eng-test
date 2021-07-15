@@ -22,22 +22,23 @@ $FX_PRIOR_DELETE='gcf_arc_api_v1_5'
 
 #$prj="skytra-benchmark-$prjSfx"
 # OR
-$prj='d-dat-digitalaircrafttransport'
-$bktSfx=''
+$prj='skt-uat-cumulus-id-8c2d'
+$bktSfx='-uat2'
 
-$STG_BUCKET="sys_stg_fx_deploy$bktSfx"
+$STG_BUCKET="skt-uat-cf-staging-yhas"
 $TRG_BUCKET="ext-iata-trig$bktSfx"
 
-$REGION='europe-west2'
+$REGION='europe-west1'
 $SRC_DIR='api_iata'
 
-$sa='cloud-functions@skytra-benchmark-prod.iam.gserviceaccount.com'
+$sa='cf-default@skt-uat-cumulus-id-8c2d.iam.gserviceaccount.com'
 
 cd c:\git\index2\gcf
 
-gcloud functions deploy $FX_NAME --project=$prj --region=$REGION --allow-unauthenticated --entry-point=main --memory=1024MB --runtime=python37 --source=$SRC_DIR --stage-bucket=$STG_BUCKET --timeout=540 --trigger-bucket=$TRG_BUCKET --service-account=$sa
+gcloud functions deploy $FX_NAME --project=$prj --region=$REGION --allow-unauthenticated --entry-point=main --memory=1024MB --runtime=python37 --source=$SRC_DIR  --stage-bucket=$STG_BUCKET --timeout=540 --trigger-bucket=$TRG_BUCKET --service-account=$sa
 
-gcloud functions delete $FX_PRIOR_DELETE --project=$prj 
+
+#gcloud functions delete $FX_PRIOR_DELETE --project=$prj 
 
 # MISC
 #------
@@ -54,4 +55,6 @@ gcloud functions delete $FX_PRIOR_DELETE --project=$prj
 
 
 
+
+echo 'new data' | gsutil cp - gs://ext-iata-trig-uat2/uat-20201026-data.txt && sleep 9s
 

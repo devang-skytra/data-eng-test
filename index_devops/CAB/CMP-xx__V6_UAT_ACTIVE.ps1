@@ -1,4 +1,10 @@
 
+# related doco
+# C:\Users\PaulDesmond\OneDrive - SKYTRA LIMITED\Shared\pd_IdxTeamShare\pd_DataTeamShare\v6 deployment plan.sh
+# C:\git\DataEng\index_devops\CAB\CMP-xx__V6_UAT_ACTIVE.ps1
+# C:\git\DataEng\index_devops\CAB\CMP-xx__V6.ps1
+# C:\git\DataEng\index_tests\IN-2240-airtyx-parallel-proc-improvement.ps1
+
 # v6 UAT version  https://skytra.atlassian.net/browse/CMP-xx
 
 
